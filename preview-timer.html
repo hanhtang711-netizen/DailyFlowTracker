@@ -1,0 +1,3172 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark" data-style="classic">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Flow Tracker — 预览</title>
+<script>
+try {
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('dft_theme') || 'dark');
+  document.documentElement.setAttribute('data-style', localStorage.getItem('dft_style') || 'classic');
+} catch {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  /* ============================================================
+     Theme Variables — Dark (Spotify) / Light
+     ============================================================ */
+  :root {
+    --bg-body: #121212;
+    --bg-panel: #181818;
+    --bg-surface: #1f1f1f;
+    --bg-elevated: #282828;
+    --bg-hover: rgba(255,255,255,0.03);
+    --bg-hover-strong: rgba(255,255,255,0.06);
+
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-tertiary: #b3b3b3;
+    --text-muted: #727272;
+    --text-dim: #4d4d4d;
+    --text-faint: #3a3a3a;
+
+    --accent: #1ed760;
+    --accent-hover: #1fdf64;
+    --accent-dim: rgba(30,215,96,0.15);
+    --accent-glow: rgba(30,215,96,0.35);
+    --accent-text: #000;
+
+    --border-light: rgba(255,255,255,0.04);
+    --border-medium: rgba(255,255,255,0.06);
+
+    --shadow-panel: 0 8px 32px rgba(0,0,0,0.45);
+    --shadow-panel-hover: 0 8px 40px rgba(0,0,0,0.55);
+
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: #333;
+    --scrollbar-thumb-hover: #555;
+
+    --hm-0: #2a2a2a;
+    --hm-1: #1a3a2a;
+    --hm-2: #1a5a3a;
+    --hm-3: #1a8a4a;
+    --hm-4: #1ed760;
+
+    --danger: #f3727f;
+    --danger-bg: rgba(243,114,127,0.08);
+    --toast-bg: #282828;
+    --toast-border: rgba(255,255,255,0.04);
+    --toast-shadow: 0 8px 32px rgba(0,0,0,0.5);
+
+    /* ===== Design Tokens — Spatial UI ===== */
+    --ease-cinematic: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-tactile: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --radius-timer: 10px;
+    --radius-compact: 8px;
+    --radius-pill: 9999px;
+
+    /* Surface depth system */
+    --depth-0: 0 1px 3px rgba(0,0,0,0.12);
+    --depth-1: 0 2px 8px rgba(0,0,0,0.2);
+    --depth-2: 0 4px 20px rgba(0,0,0,0.3);
+    --depth-3: 0 8px 32px rgba(0,0,0,0.45);
+    --depth-glow: 0 4px 14px rgba(30,215,96,0.10);
+
+    /* Ambient glow tokens */
+    --glow-top: linear-gradient(90deg, transparent, hsla(0,0%,100%,0.035), transparent);
+    --glow-accent: radial-gradient(ellipse 65% 65% at 62% 28%, rgba(30,215,96,0.035) 0%, rgba(30,215,96,0.01) 35%, transparent 60%);
+
+    /* Button tokens */
+    --btn-green-bg: linear-gradient(180deg, #1e3a2a 0%, #1a3628 100%);
+    --btn-green-hover: linear-gradient(180deg, #224a32 0%, #1e4030 100%);
+    --btn-green-active: linear-gradient(180deg, #183026 0%, #162e24 100%);
+    --btn-green-text: rgba(30,215,96,0.75);
+    --btn-green-text-hover: #1ed760;
+    --btn-green-pause: linear-gradient(180deg, #1a1a1a 0%, #181818 100%);
+    --btn-green-pause-hover: linear-gradient(180deg, #202020 0%, #1c1c1c 100%);
+
+    --app-bg: none;
+    --body-overlay: none;
+
+    /* ===== Ambient Glow — Classic Dark (Spotify emerald #1DB954) ===== */
+    /* 色系: 翡翠绿 ×2 亮度 — 翠绿、明亮、始终覆盖 >40%。慢速微移，常驻感。*/
+    --glow-ambient-outer:
+      /* 1 — 主光源 左上（最大最亮） */
+      radial-gradient(ellipse 72% 64% at 5% 3%,
+        rgba(29, 220, 100, 0.56) 0%, rgba(29, 220, 100, 0.24) 25%, rgba(22, 160, 70, 0.08) 48%, transparent 72%),
+      /* 2 — 右下副光（大范围） */
+      radial-gradient(ellipse 62% 66% at 88% 85%,
+        rgba(26, 205, 92, 0.40) 0%, rgba(26, 205, 92, 0.16) 28%, rgba(18, 130, 55, 0.04) 52%, transparent 70%),
+      /* 3 — 底部横贯（宽而扁） */
+      radial-gradient(ellipse 56% 40% at 44% 96%,
+        rgba(28, 212, 96, 0.34) 0%, rgba(28, 212, 96, 0.13) 32%, transparent 56%),
+      /* 4 — 右上角高光 */
+      radial-gradient(ellipse 48% 46% at 96% 3%,
+        rgba(30, 228, 104, 0.28) 0%, rgba(30, 228, 104, 0.10) 36%, transparent 62%),
+      /* 5 — 左侧中段补光 */
+      radial-gradient(ellipse 48% 52% at 1% 52%,
+        rgba(27, 210, 94, 0.30) 0%, rgba(27, 210, 94, 0.10) 35%, transparent 58%),
+      /* 6 — 右侧中部过渡 */
+      radial-gradient(ellipse 44% 38% at 98% 46%,
+        rgba(29, 218, 98, 0.24) 0%, rgba(29, 218, 98, 0.08) 40%, transparent 60%),
+      /* 7 — 顶部中央微光 */
+      radial-gradient(ellipse 40% 34% at 50% 0%,
+        rgba(32, 235, 110, 0.20) 0%, rgba(32, 235, 110, 0.06) 42%, transparent 62%);
+    --glow-ambient-inner:
+      /* A — 呼吸核心 左上主焦 */
+      radial-gradient(ellipse 74% 64% at 14% 10%,
+        rgba(35, 235, 112, 0.48) 0%, rgba(29, 220, 100, 0.18) 30%, rgba(20, 150, 65, 0.04) 54%, transparent 68%),
+      /* B — 右下次焦点 */
+      radial-gradient(ellipse 54% 48% at 80% 55%,
+        rgba(30, 225, 102, 0.32) 0%, rgba(24, 175, 78, 0.10) 34%, transparent 58%),
+      /* C — 底部内层补光 */
+      radial-gradient(ellipse 48% 38% at 38% 90%,
+        rgba(28, 215, 97, 0.26) 0%, rgba(22, 160, 70, 0.07) 38%, transparent 56%),
+      /* D — 右上内层点缀 */
+      radial-gradient(ellipse 40% 42% at 90% 8%,
+        rgba(33, 240, 115, 0.22) 0%, rgba(25, 180, 82, 0.06) 40%, transparent 60%);
+
+    --panel-border-radius: 12px;
+    --panel-padding: 24px;
+    --surface-border-radius: 8px;
+    --input-radius: var(--radius-compact);
+    --button-radius: 10px;
+    --soft-outline: transparent;
+    --surface-highlight: transparent;
+    --timer-ring-track: #141414;
+    --timer-display-bg: rgba(0,0,0,0.14);
+    --task-card-bg: linear-gradient(180deg, rgba(255,255,255,0.008) 0%, rgba(255,255,255,0.012) 100%);
+    --task-card-hover-bg: hsla(0,0%,100%,0.02);
+    --calendar-cell-radius: 7px;
+  }
+
+  [data-theme="light"] {
+    --bg-body: #f4f4f4;
+    --bg-panel: #ffffff;
+    --bg-surface: #efefef;
+    --bg-elevated: #e4e4e4;
+    --bg-hover: rgba(0,0,0,0.03);
+    --bg-hover-strong: rgba(0,0,0,0.06);
+
+    --text-primary: #1a1a1a;
+    --text-secondary: #2e2e2e;
+    --text-tertiary: #555;
+    --text-muted: #888;
+    --text-dim: #aaa;
+    --text-faint: #ccc;
+
+    --accent: #1db954;
+    --accent-hover: #1aa34a;
+    --accent-dim: rgba(29,185,84,0.12);
+    --accent-glow: rgba(29,185,84,0.2);
+    --accent-text: #fff;
+
+    --border-light: rgba(0,0,0,0.06);
+    --border-medium: rgba(0,0,0,0.1);
+
+    --shadow-panel: 0 2px 14px rgba(0,0,0,0.07);
+    --shadow-panel-hover: 0 4px 24px rgba(0,0,0,0.11);
+
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: #ccc;
+    --scrollbar-thumb-hover: #aaa;
+
+    --hm-0: #ebedf0;
+    --hm-1: #c6e48b;
+    --hm-2: #7bc96f;
+    --hm-3: #449a3e;
+    --hm-4: #1db954;
+
+    --danger: #d32f2f;
+    --danger-bg: rgba(211,47,47,0.08);
+    --toast-bg: #333;
+    --toast-border: rgba(255,255,255,0.1);
+    --toast-shadow: 0 4px 20px rgba(0,0,0,0.2);
+
+    /* Light Design Tokens */
+    --glow-top: linear-gradient(90deg, transparent, hsla(0,0%,0%,0.03), transparent);
+    --glow-accent: radial-gradient(ellipse 65% 65% at 62% 28%, rgba(29,185,84,0.04) 0%, rgba(29,185,84,0.01) 35%, transparent 60%);
+    --depth-0: 0 1px 3px rgba(0,0,0,0.06);
+    --depth-1: 0 2px 8px rgba(0,0,0,0.08);
+    --depth-2: 0 4px 16px rgba(0,0,0,0.1);
+    --depth-3: 0 8px 32px rgba(0,0,0,0.12);
+    --depth-glow: 0 2px 8px rgba(29,185,84,0.12);
+    --btn-green-bg: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+    --btn-green-hover: linear-gradient(180deg, #f1f8e9 0%, #dcedc8 100%);
+    --btn-green-active: linear-gradient(180deg, #dcedc8 0%, #c8e6c9 100%);
+    --btn-green-text: #2e7d32;
+    --btn-green-text-hover: #1b5e20;
+    --btn-green-pause: linear-gradient(180deg, #e0e0e0 0%, #d5d5d5 100%);
+    --btn-green-pause-hover: linear-gradient(180deg, #d5d5d5 0%, #cccccc 100%);
+    --timer-ring-track: var(--bg-elevated);
+    --timer-display-bg: rgba(255,255,255,0.42);
+    --task-card-bg: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.008) 100%);
+    --task-card-hover-bg: hsla(0,0%,0%,0.02);
+  }
+
+  [data-style="cozy"] {
+    --bg-body: #f8f2ea;
+    --bg-panel: rgba(255,252,247,0.92);
+    --bg-surface: rgba(255,247,237,0.92);
+    --bg-elevated: #f0e2d1;
+    --bg-hover: rgba(185,136,91,0.06);
+    --bg-hover-strong: rgba(185,136,91,0.1);
+    --text-primary: #4d3521;
+    --text-secondary: #684931;
+    --text-tertiary: #89684d;
+    --text-muted: #aa8766;
+    --text-dim: #bf9e80;
+    --text-faint: #d4bba3;
+    --accent: #cb8b47;
+    --accent-hover: #d79959;
+    --accent-dim: rgba(203,139,71,0.18);
+    --accent-glow: rgba(203,139,71,0.24);
+    --accent-text: #fffaf2;
+    --border-light: rgba(146,103,63,0.08);
+    --border-medium: rgba(146,103,63,0.14);
+    --shadow-panel: 0 14px 36px rgba(162,118,73,0.1);
+    --shadow-panel-hover: 0 18px 42px rgba(162,118,73,0.14);
+    --scrollbar-thumb: #d7b48d;
+    --scrollbar-thumb-hover: #c89d6c;
+    --toast-bg: #6f5039;
+    --toast-border: rgba(255,255,255,0.1);
+    --toast-shadow: 0 12px 28px rgba(111,80,57,0.24);
+    --app-bg:
+      radial-gradient(circle at top left, rgba(255,250,243,0.72) 0%, transparent 34%),
+      radial-gradient(circle at 85% 18%, rgba(251,227,195,0.24) 0%, transparent 28%);
+    --body-overlay:
+      radial-gradient(circle at 50% 0%, rgba(255,255,255,0.22) 0%, transparent 40%);
+    --glow-top: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    --glow-accent: radial-gradient(ellipse 65% 65% at 62% 28%, rgba(203,139,71,0.12) 0%, rgba(203,139,71,0.03) 35%, transparent 65%);
+    --depth-0: 0 2px 8px rgba(121,86,55,0.06);
+    --depth-1: 0 4px 14px rgba(121,86,55,0.08);
+    --depth-2: 0 10px 28px rgba(121,86,55,0.11);
+    --depth-3: 0 16px 42px rgba(121,86,55,0.14);
+    --depth-glow: 0 8px 22px rgba(203,139,71,0.14);
+    --panel-border-radius: 24px;
+    --panel-padding: 24px;
+    --surface-border-radius: 18px;
+    --input-radius: 18px;
+    --button-radius: 16px;
+    --soft-outline: inset 0 1px 0 rgba(255,255,255,0.24);
+    --surface-highlight: linear-gradient(180deg, rgba(255,255,255,0.38) 0%, transparent 30%);
+    --btn-green-bg: linear-gradient(180deg, #d6a36b 0%, #c48745 100%);
+    --btn-green-hover: linear-gradient(180deg, #e0ae78 0%, #cf9556 100%);
+    --btn-green-active: linear-gradient(180deg, #c98f52 0%, #b67b3d 100%);
+    --btn-green-text: #fffaf2;
+    --btn-green-text-hover: #ffffff;
+    --btn-green-pause: linear-gradient(180deg, #d4bba3 0%, #c9ac91 100%);
+    --btn-green-pause-hover: linear-gradient(180deg, #dec9b5 0%, #d4bba3 100%);
+    --timer-ring-track: rgba(201,161,117,0.22);
+    --timer-display-bg: rgba(255,255,255,0.62);
+    --hm-0: #f0e6d8;
+    --hm-1: #e1cfb6;
+    --hm-2: #d4b48c;
+    --hm-3: #c49a6a;
+    --hm-4: #cb8b47;
+    --task-card-bg: transparent;
+    --task-card-hover-bg: rgba(255,245,231,0.96);
+    --calendar-cell-radius: 18px;
+  }
+
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Before theme-ready: block ALL transitions (override 28+ element-specific rules) */
+  html:not(.theme-ready) *, html:not(.theme-ready) *::before, html:not(.theme-ready) *::after {
+    transition: none !important;
+  }
+  /* After theme-ready: smooth theme switching on visible surfaces */
+  html.theme-ready body,
+  html.theme-ready .app,
+  html.theme-ready .panel,
+  html.theme-ready button,
+  html.theme-ready input,
+  html.theme-ready select,
+  html.theme-ready .task-item,
+  html.theme-ready .toast {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: "Inter", "Noto Sans SC", "Helvetica Neue", arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 17px;
+    background: var(--bg-body);
+    background-image: var(--body-overlay);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Prevent text selection on drag regions */
+  .titlebar { user-select: none; -webkit-user-select: none; }
+
+  /* ===== Ambient Glow Layer (Classic Dark) ===== */
+  .ambient-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .ambient-glow-layer {
+    position: absolute;
+    width: 260%;
+    height: 260%;
+    top: -80%;
+    left: -80%;
+    background: var(--glow-ambient-outer);
+    filter: blur(75px);
+    will-change: transform, opacity;
+  }
+  .ambient-glow-layer.inner {
+    width: 220%;
+    height: 220%;
+    top: -60%;
+    left: -60%;
+    background: var(--glow-ambient-inner);
+    filter: blur(65px);
+    filter: blur(36px);
+  }
+  ::selection { background: var(--accent-dim); }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+  .app {
+    width: 100%;
+    max-width: 960px;
+    height: 100%;
+    max-height: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    background-image: var(--app-bg);
+  }
+
+  /* ============================================================
+     Top Bar
+     ============================================================ */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    -webkit-app-region: drag;
+    -webkit-app-region: drag;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-brand svg { display: block; flex-shrink: 0; }
+  .topbar-brand h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.4px;
+  }
+  .topbar-brand h1 span { color: var(--accent); }
+  .topbar-date {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    width: 32px; height: 32px;
+    border: none; border-radius: var(--radius-compact);
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+  .theme-toggle:hover {
+    background: hsla(0,0%,100%,0.03);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+  }
+  [data-theme="light"][data-style="classic"] .theme-toggle:hover {
+    background: hsla(0,0%,0%,0.03);
+  }
+
+  .style-toggle {
+    min-width: 74px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--button-radius);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--soft-outline), var(--depth-0);
+    transition: all 0.24s var(--ease-cinematic);
+  }
+  .style-toggle:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-medium);
+    background: var(--task-card-hover-bg);
+    box-shadow: var(--soft-outline), var(--depth-1);
+  }
+
+  .lang-toggle {
+    width: 32px; height: 32px;
+    border: none; border-radius: var(--radius-compact);
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+  .lang-toggle:hover {
+    background: hsla(0,0%,100%,0.03);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+  }
+  [data-theme="light"][data-style="classic"] .lang-toggle:hover {
+    background: hsla(0,0%,0%,0.03);
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
+
+  /* ============================================================
+     Custom Title Bar (Electron frameless)
+     ============================================================ */
+  .titlebar {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 2px 0 16px;
+    background: var(--bg-body);
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-light);
+    -webkit-app-region: drag;
+  }
+  .titlebar-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+  }
+  .titlebar-controls {
+    display: flex;
+    -webkit-app-region: no-drag;
+    gap: 1px;
+  }
+  .titlebar-btn {
+    width: 36px; height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s;
+    border-radius: 4px;
+  }
+  .titlebar-btn svg { display: block; }
+  .titlebar-btn:hover { background: var(--bg-hover-strong); color: var(--text-primary); }
+  .titlebar-btn.close:hover { background: #e81123; color: #fff; }
+  .titlebar-btn.close:active { background: #bf0f1d; }
+
+  /* ============================================================
+     Grid
+     ============================================================ */
+  .main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 8px;
+    min-height: 0;
+  }
+  @media (max-width: 720px) {
+    .main-grid { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  }
+
+  /* ============================================================
+     Panels — 空间感统一
+     ============================================================ */
+  .panel {
+    background: var(--bg-body);
+    border-radius: var(--panel-border-radius);
+    padding: var(--panel-padding);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--shadow-panel);
+    border: 1px solid var(--border-light);
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20px; right: 20px;
+    height: 1px;
+    background: var(--glow-top);
+    pointer-events: none;
+    z-index: 1;
+  }
+  [data-style="cozy"] .panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--surface-highlight);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ============================================================
+     LEFT — Timer (旗舰微调)
+     ============================================================ */
+  .timer-panel {
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    position: relative;
+    background: var(--bg-body);
+    overflow: visible;
+    padding: 32px 28px 20px;
+  }
+
+  /* 顶光反射 */
+  .timer-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20px; right: 20px;
+    height: 1px;
+    background: var(--glow-top);
+    pointer-events: none;
+  }
+
+  /* Mode tabs — 更紧凑 */
+  .timer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+  .mode-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    padding: 2px;
+    border: 1px solid var(--border-light);
+  }
+  .mode-tab {
+    padding: 4px 16px;
+    border: none;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--text-faint);
+    letter-spacing: 0.3px;
+  }
+  .mode-tab.active {
+    background: var(--bg-elevated);
+    color: var(--text-tertiary);
+  }
+  .mode-tab:hover:not(.active) {
+    color: var(--text-dim);
+  }
+
+  /* Gear */
+  .btn-gear {
+    width: 28px; height: 28px;
+    border: none; border-radius: 6px;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .btn-gear:hover { background: var(--bg-elevated); color: var(--text-dim); }
+  .btn-gear.active { background: var(--bg-elevated); color: var(--accent); }
+
+  /* Settings panel */
+  .timer-settings {
+    width: 100%;
+    background: var(--bg-surface);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-light);
+    position: relative;
+    z-index: 1;
+  }
+  .timer-settings.open { display: flex; }
+  .ts-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ts-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .ts-controls { display: flex; align-items: center; gap: 6px; }
+  .ts-controls button {
+    width: 24px; height: 24px;
+    border: none; border-radius: 6px;
+    background: var(--bg-elevated);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .ts-controls button:hover { background: var(--bg-hover-strong); color: var(--text-tertiary); }
+  .ts-controls .ts-val {
+    width: 30px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Timer ring — hero */
+  .timer-ring-wrap {
+    position: relative;
+    width: 190px;
+    height: 190px;
+    margin: 4px 0;
+  }
+  .timer-ring-wrap svg {
+    transform: rotate(-90deg);
+    transition: filter 0.6s ease;
+  }
+  .timer-ring-wrap.is-running svg {
+    animation: energyDrift 8s ease-in-out infinite;
+  }
+  .timer-ring-bg {
+    fill: none;
+    stroke: var(--timer-ring-track);
+    stroke-width: 3.5;
+  }
+  .timer-ring-progress {
+    fill: none;
+    stroke: url(#energyFlow);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 526.48;
+    filter: drop-shadow(0 0 6px rgba(30,215,96,0.15))
+            drop-shadow(0 0 16px rgba(30,215,96,0.04));
+    transition: stroke-dashoffset 0.4s ease;
+  }
+
+  /* 外圈环境光 */
+  .ring-ambient {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse 65% 65% at 62% 28%,
+      rgba(30,215,96,0.035) 0%,
+      rgba(30,215,96,0.01) 35%,
+      transparent 60%
+    );
+    pointer-events: none;
+    animation: ambientBreathe 6s ease-in-out infinite;
+  }
+
+  /* 内圈氛围 */
+  .ring-inner {
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse 55% 45% at 58% 28%,
+      rgba(30,215,96,0.025) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
+    animation: innerBreathe 6s ease-in-out infinite;
+  }
+
+  /* 终点能量聚焦 */
+  .ring-focus {
+    position: absolute;
+    top: 25%;
+    right: 14%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(30,215,96,0.05) 0%,
+      rgba(30,215,96,0.015) 35%,
+      transparent 65%
+    );
+    pointer-events: none;
+    animation: focusPulse 4s ease-in-out infinite;
+  }
+
+  /* Pulse ring */
+  .pulse-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid rgba(30,215,96,0.035);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .timer-ring-wrap.is-running .pulse-ring {
+    opacity: 1;
+    animation: ringPulse 4s ease-in-out infinite;
+  }
+
+  /* Center text */
+  .timer-center {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .timer-display {
+    font-size: 44px;
+    font-weight: 800;
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1.5px;
+    color: var(--text-primary);
+    line-height: 1;
+    text-shadow:
+      0 0 24px rgba(30,215,96,0.04),
+      0 1px 2px rgba(0,0,0,0.5);
+    transition: color 0.4s ease, text-shadow 0.4s ease;
+  }
+  .timer-ring-wrap.is-running .timer-display {
+    color: #eaf3ee;
+    text-shadow:
+      0 0 32px rgba(30,215,96,0.06),
+      0 1px 3px rgba(0,0,0,0.4);
+    animation: textBreathe 6s ease-in-out infinite;
+  }
+  [data-theme="light"][data-style="classic"] .timer-ring-wrap.is-running .timer-display {
+    color: var(--text-primary);
+    text-shadow: none;
+  }
+  .timer-label {
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-top: 7px;
+    transition: color 0.4s ease;
+  }
+  .timer-ring-wrap.is-running .timer-label {
+    color: rgba(30,215,96,0.3);
+    animation: labelBreathe 6s ease-in-out infinite;
+  }
+
+  /* Controls */
+  .timer-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+  .btn-solid {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 18px;
+    border: none;
+    border-radius: var(--button-radius);
+    background: var(--btn-green-bg);
+    color: var(--btn-green-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+    outline: none;
+  }
+  .btn-solid:hover {
+    background: var(--btn-green-hover);
+    color: var(--btn-green-text-hover);
+    transform: translateY(-1px);
+    box-shadow:
+      0 4px 14px rgba(30,215,96,0.10),
+      0 2px 6px rgba(0,0,0,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .btn-solid:active {
+    transform: translateY(0);
+    transition-duration: 0.1s;
+    background: var(--btn-green-active);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  /* Pause state */
+  .btn-solid.is-running {
+    background: var(--btn-green-pause);
+    color: var(--text-dim);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .btn-solid.is-running:hover {
+    background: var(--btn-green-pause-hover);
+    color: var(--text-tertiary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 18px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--button-radius);
+    background: hsla(0,0%,100%,0.012);
+    color: var(--text-faint);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+    outline: none;
+  }
+  .btn-ghost:hover {
+    border-color: hsla(0,0%,100%,0.05);
+    background: hsla(0,0%,100%,0.025);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+  }
+  .btn-ghost:active {
+    transform: translateY(0);
+    transition-duration: 0.1s;
+  }
+  [data-theme="light"][data-style="classic"] .btn-ghost {
+    background: hsla(0,0%,0%,0.02);
+    color: var(--text-dim);
+  }
+  [data-theme="light"][data-style="classic"] .btn-ghost:hover {
+    background: hsla(0,0%,0%,0.04);
+    color: var(--text-tertiary);
+    border-color: hsla(0,0%,0%,0.1);
+  }
+
+  /* Stats */
+  .timer-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .stat-icon {
+    font-size: 9px;
+    opacity: 0.15;
+  }
+  .stat-number {
+    font-size: 11.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+  }
+  .stat-unit {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-faint);
+  }
+
+  /* ============================================================
+     RIGHT — Tab bar (unified with timer mode-tabs)
+     ============================================================ */
+  .tasks-panel { gap: 16px; }
+
+  .panel-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-surface);
+    border-radius: 8px;
+    padding: 2px;
+    align-self: flex-start;
+    border: 1px solid var(--border-light);
+  }
+  .panel-tab {
+    padding: 4px 14px;
+    border: none;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.3px;
+  }
+  .panel-tab.active {
+    background: var(--bg-elevated);
+    color: var(--text-tertiary);
+  }
+  .panel-tab:hover:not(.active) { color: var(--text-dim); }
+
+  /* Tab content */
+  .tab-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+  }
+  .tab-view {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-tactile), transform 0.25s var(--ease-tactile);
+    transform: translateY(4px);
+  }
+  .tab-view.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* ============================================================
+     Tasks View — 空间感统一
+     ============================================================ */
+  .task-input-wrap { display: flex; gap: 6px; }
+  .task-input-wrap input {
+    flex: 1;
+    padding: 9px 14px;
+    background: hsla(0,0%,100%,0.025);
+    border: 1px solid var(--border-light);
+    border-radius: var(--input-radius);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s var(--ease-cinematic);
+  }
+  .task-input-wrap input::placeholder { color: var(--text-faint); }
+  .task-input-wrap input:focus {
+    border-color: var(--accent-dim);
+    background: hsla(0,0%,100%,0.035);
+    box-shadow: 0 0 0 1px rgba(30,215,96,0.06);
+  }
+  .task-input-wrap select {
+    padding: 9px 12px;
+    background: hsla(0,0%,100%,0.025);
+    border: 1px solid var(--border-light);
+    border-radius: var(--input-radius);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23727272' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 36px;
+    transition: border-color 0.2s var(--ease-cinematic);
+  }
+  .task-input-wrap select:focus {
+    border-color: var(--accent-dim);
+  }
+  [data-theme="light"][data-style="classic"] .task-input-wrap input,
+  [data-theme="light"][data-style="classic"] .task-input-wrap select {
+    background: hsla(0,0%,0%,0.025);
+  }
+
+  .btn-circle {
+    width: 34px; height: 34px;
+    border: none; border-radius: var(--radius-compact);
+    background: hsla(0,0%,100%,0.025);
+    color: var(--text-dim);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    flex-shrink: 0;
+    border: 1px solid var(--border-light);
+  }
+  .btn-circle:hover {
+    background: hsla(0,0%,100%,0.05);
+    color: var(--text-tertiary);
+    border-color: hsla(0,0%,100%,0.08);
+    transform: translateY(-1px);
+    box-shadow: var(--depth-1);
+  }
+  .btn-circle:active { transform: translateY(0); transition-duration: 0.1s; }
+  [data-theme="light"][data-style="classic"] .btn-circle { background: hsla(0,0%,0%,0.025); }
+  [data-theme="light"][data-style="classic"] .btn-circle:hover { background: hsla(0,0%,0%,0.05); border-color: hsla(0,0%,0%,0.1); }
+
+  .cat-strip { display: flex; gap: 4px; flex-wrap: wrap; }
+  .cat-chip {
+    padding: 3px 12px;
+    border: none;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-cinematic);
+    background: transparent;
+    color: var(--text-faint);
+    border: 1px solid var(--border-light);
+    letter-spacing: 0.3px;
+  }
+  .cat-chip:hover { color: var(--text-dim); border-color: var(--border-medium); }
+  .cat-chip.active {
+    background: var(--bg-elevated);
+    color: var(--text-tertiary);
+    border-color: var(--bg-elevated);
+  }
+
+  /* ——— Date Navigator ——— */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: hsla(0,0%,100%,0.015);
+    border-radius: var(--radius-compact);
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+  }
+  .date-nav-btn {
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    flex-shrink: 0;
+  }
+  .date-nav-btn:hover {
+    background: hsla(0,0%,100%,0.04);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+  }
+  .date-nav-btn:active { transform: translateY(0); transition-duration: 0.1s; }
+  [data-theme="light"][data-style="classic"] .date-nav {
+    background: hsla(0,0%,0%,0.02);
+  }
+  [data-theme="light"][data-style="classic"] .date-nav-btn:hover {
+    background: hsla(0,0%,0%,0.04);
+  }
+  .date-nav-info {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .date-nav-date {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+  .date-nav-date.not-today { color: var(--accent); }
+  .date-nav-weekday {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .date-nav-today {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 7px;
+    background: var(--btn-green-bg);
+    color: rgba(30,215,96,0.75);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-cinematic);
+    display: none;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+    box-shadow: var(--depth-0);
+  }
+  .date-nav-today:hover {
+    background: var(--btn-green-hover);
+    color: #1ed760;
+    transform: translateY(-1px);
+    box-shadow: var(--depth-glow);
+  }
+  .date-nav-today:active {
+    transform: translateY(0);
+    transition-duration: 0.1s;
+    background: var(--btn-green-active);
+  }
+  .date-nav-today.show { display: block; }
+  [data-theme="light"][data-style="classic"] .date-nav-today {
+    background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+  }
+  [data-theme="light"][data-style="classic"] .date-nav-today:hover {
+    background: linear-gradient(180deg, #f1f8e9 0%, #dcedc8 100%);
+    color: #1b5e20;
+  }
+
+  .task-progress-row { display: flex; align-items: center; gap: 10px; }
+  .task-progress-row .bar {
+    flex: 1; height: 3px;
+    background: var(--bg-elevated);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .task-progress-row .bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    border-radius: 99px;
+    transition: width 0.4s var(--ease-tactile);
+    width: 0%;
+  }
+  .task-progress-row .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-faint);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .task-progress-row .label strong { color: var(--text-dim); }
+
+  .task-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    margin: 0 -24px;
+    padding: 0 24px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--surface-border-radius);
+    cursor: default;
+    background: var(--task-card-bg);
+    transition: all 0.2s var(--ease-cinematic);
+    border: 1px solid var(--border-light);
+    margin-bottom: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .task-item:hover {
+    background: var(--task-card-hover-bg);
+    border-color: var(--border-medium);
+    transform: translateY(-1px);
+    box-shadow: var(--depth-0);
+  }
+  /* Drag and drop */
+  .task-item.dragging { opacity: 0.35; }
+  .task-item.drag-over-before { border-top: 2px solid var(--accent) !important; }
+  .task-item.drag-over-after { border-bottom: 2px solid var(--accent) !important; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--text-faint);
+    cursor: pointer;
+    display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.25s var(--ease-cinematic);
+    flex-shrink: 0;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .task-check:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(30,215,96,0.2);
+  }
+  .task-check:checked::after { content: '✓'; color: var(--accent-text); font-size: 10px; font-weight: 800; }
+  .task-check:hover:not(:checked) { border-color: var(--text-dim); }
+
+  .task-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: opacity 0.2s var(--ease-cinematic);
+  }
+  .task-item.done .task-dot { opacity: 0.2; }
+
+  .task-text {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    transition: color 0.2s var(--ease-cinematic);
+    line-height: 1.4;
+  }
+  .task-item.done .task-text { color: var(--text-faint); }
+
+  .task-text-edit {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 400;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: hsla(0,0%,100%,0.035);
+    border: 1px solid var(--accent-dim);
+    border-radius: 6px;
+    padding: 2px 8px;
+    outline: none;
+    min-width: 0;
+    line-height: 1.4;
+    transition: border-color 0.2s var(--ease-cinematic);
+  }
+  .task-text-edit:focus { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(30,215,96,0.1); }
+
+  .task-del {
+    width: 22px; height: 22px;
+    border: none; border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-faint);
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    opacity: 0;
+  }
+  .task-item:hover .task-del { opacity: 1; }
+  .task-del:hover { color: var(--danger); background: var(--danger-bg); }
+
+  .task-note-btn {
+    width: 24px; height: 24px;
+    border: none; border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-faint);
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+    opacity: 0;
+    flex-shrink: 0;
+  }
+  .task-item:hover .task-note-btn { opacity: 1; }
+  .task-note-btn:hover { color: var(--text-tertiary); background: hsla(0,0%,100%,0.03); }
+  .task-note-btn.has-note { color: var(--accent); opacity: 1; }
+
+  .task-note-wrap {
+    padding: 0 8px 8px 46px;
+  }
+  .task-note-input {
+    width: 100%;
+    padding: 8px 10px;
+    background: hsla(0,0%,100%,0.02);
+    border: 1px solid var(--border-light);
+    border-radius: var(--input-radius);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-secondary);
+    resize: vertical;
+    min-height: 44px;
+    max-height: 120px;
+    outline: none;
+    transition: border-color 0.2s var(--ease-cinematic);
+    line-height: 1.5;
+  }
+  .task-note-input:focus { border-color: var(--accent-dim); }
+  .task-note-input::placeholder { color: var(--text-faint); }
+  [data-theme="light"][data-style="classic"] .task-note-input { background: hsla(0,0%,0%,0.015); }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 120px;
+    color: var(--text-faint);
+    font-size: 14px;
+    font-weight: 500;
+    gap: 6px;
+  }
+  .empty-state svg { opacity: 0.3; margin-bottom: 4px; }
+
+  /* ============================================================
+     Calendar View — 空间感悬浮层
+     ============================================================ */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-nav h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.3px;
+  }
+  .cal-nav-btn {
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s var(--ease-cinematic);
+  }
+  .cal-nav-btn:hover {
+    background: hsla(0,0%,100%,0.035);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+  }
+  .cal-nav-btn:active { transform: translateY(0); transition-duration: 0.1s; }
+  [data-theme="light"][data-style="classic"] .cal-nav-btn:hover { background: hsla(0,0%,0%,0.035); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+  .cal-hdr {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 4px 0 8px;
+    letter-spacing: 0.8px;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--calendar-cell-radius);
+    cursor: pointer;
+    transition: all 0.2s var(--ease-cinematic);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    position: relative;
+  }
+  .cal-cell:hover {
+    background: hsla(0,0%,100%,0.025);
+    transform: translateY(-1px);
+  }
+  [data-theme="light"][data-style="classic"] .cal-cell:hover {
+    background: hsla(0,0%,0%,0.025);
+  }
+  .cal-cell.muted { color: var(--text-faint); }
+  .cal-cell.today { font-weight: 700; color: var(--accent); }
+  .cal-cell .dot {
+    width: 3.5px; height: 3.5px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+  }
+  .cal-cell .dot.lvl2 { background: var(--accent); }
+  .cal-cell .dot.lvl1 { background: var(--text-faint); }
+  .cal-cell.sel {
+    background: hsla(0,0%,100%,0.035);
+    box-shadow: inset 0 0 0 1px var(--border-medium);
+  }
+  [data-theme="light"][data-style="classic"] .cal-cell.sel { background: hsla(0,0%,0%,0.035); }
+
+  .cal-detail {
+    margin-top: 10px;
+    background: hsla(0,0%,100%,0.015);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-compact);
+    padding: 14px 16px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .cal-detail h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+  .cal-detail .meta {
+    display: flex; gap: 16px;
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+  .cal-detail .meta strong { color: var(--text-dim); font-weight: 600; }
+  .cal-detail-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0; font-size: 13px; color: var(--text-secondary);
+  }
+  .cal-detail-item.done { color: var(--text-faint); text-decoration: line-through; }
+  .cal-detail-empty { color: var(--text-faint); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* ============================================================
+     Heatmap View
+     ============================================================ */
+  .hm-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .hm-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+  .hm-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .hm-head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.3px;
+  }
+  .hm-leg {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: var(--text-faint);
+  }
+  .hm-leg .s {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .hm-leg .s:nth-child(2) { background: var(--hm-0); }
+  .hm-leg .s:nth-child(3) { background: var(--hm-1); }
+  .hm-leg .s:nth-child(4) { background: var(--hm-2); }
+  .hm-leg .s:nth-child(5) { background: var(--hm-3); }
+  .hm-leg .s:nth-child(6) { background: var(--hm-4); }
+
+  .hm-tbl { display: flex; gap: 3px; }
+  .hm-ys {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-right: 4px;
+  }
+  .hm-ys span {
+    height: 14px;
+    font-size: 9px;
+    color: var(--text-faint);
+    line-height: 14px;
+    text-align: right;
+    width: 18px;
+  }
+  .hm-cols { display: flex; gap: 3px; }
+  .hm-wk { display: flex; flex-direction: column; gap: 3px; }
+  .hm-c {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-cinematic);
+    position: relative;
+  }
+  .hm-c:hover { transform: scale(1.3); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .hm-c[data-lvl="0"] { background: var(--hm-0); }
+  .hm-c[data-lvl="1"] { background: var(--hm-1); }
+  .hm-c[data-lvl="2"] { background: var(--hm-2); }
+  .hm-c[data-lvl="3"] { background: var(--hm-3); }
+  .hm-c[data-lvl="4"] { background: var(--hm-4); }
+  .hm-c[title]:hover::after {
+    content: attr(title);
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--toast-bg);
+    color: var(--text-secondary);
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: var(--radius-compact);
+    white-space: nowrap;
+    z-index: 200;
+    box-shadow: var(--toast-shadow);
+    pointer-events: none;
+    font-weight: 500;
+    border: 1px solid var(--toast-border);
+  }
+
+  /* ============================================================
+     Bottom Bar — 空间感元数据栏
+     ============================================================ */
+  .btm {
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    background: var(--bg-body);
+    border-radius: 12px;
+    box-shadow: var(--shadow-panel);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    position: relative;
+  }
+  .btm::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20px; right: 20px;
+    height: 1px;
+    background: var(--glow-top);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .btm-item {
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s var(--ease-cinematic);
+    cursor: default;
+    position: relative;
+    background: transparent;
+  }
+  .btm-item:hover {
+    background: hsla(0,0%,100%,0.015);
+  }
+  [data-theme="light"][data-style="classic"] .btm-item:hover {
+    background: hsla(0,0%,0%,0.015);
+  }
+  .btm-item .v {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  .btm-item .l {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 1px;
+  }
+
+  .btm-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    min-width: 180px;
+    background: rgba(30,215,96,0.04);
+    position: relative;
+  }
+  .btm-progress .track {
+    width: 80px;
+    height: 3px;
+    background: var(--bg-elevated);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .btm-progress .track .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    border-radius: 99px;
+    transition: width 0.4s var(--ease-tactile);
+    width: 0%;
+  }
+  .btm-progress .info { display: flex; flex-direction: column; }
+  .btm-progress .pct {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  .btm-progress .lbl {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  @media (max-width: 720px) {
+    .btm { flex-wrap: wrap; }
+    .btm-progress { flex: 1; min-width: 100%; justify-content: center; }
+  }
+
+  /* ============================================================
+     Toggle Switch
+     ============================================================ */
+  .ts-toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .ts-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .ts-toggle-track {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--text-dim);
+    border-radius: 99px;
+    transition: background 0.2s ease;
+  }
+  .ts-toggle-track::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  .ts-toggle input:checked + .ts-toggle-track {
+    background: var(--accent);
+  }
+  .ts-toggle input:checked + .ts-toggle-track::before {
+    transform: translateX(16px);
+  }
+
+  /* ============================================================
+     Toast
+     ============================================================ */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--toast-bg);
+    color: var(--text-secondary);
+    padding: 10px 24px;
+    border-radius: 9999px;
+    font-size: 15px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: var(--toast-shadow);
+    border: 1px solid var(--toast-border);
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  [data-style="cozy"] .topbar-brand h1 span {
+    text-shadow: 0 2px 10px var(--accent-dim);
+  }
+  [data-style="cozy"] .mode-tabs,
+  [data-style="cozy"] .timer-settings,
+  [data-style="cozy"] .date-nav,
+  [data-style="cozy"] .cal-detail,
+  [data-style="cozy"] .task-input-wrap input,
+  [data-style="cozy"] .task-input-wrap select,
+  [data-style="cozy"] .task-note-input,
+  [data-style="cozy"] .btn-circle,
+  [data-style="cozy"] .date-nav-today,
+  [data-style="cozy"] .btn-solid,
+  [data-style="cozy"] .btn-ghost {
+    box-shadow: var(--soft-outline), var(--depth-0);
+  }
+  [data-style="cozy"] .mode-tab.active,
+  [data-style="cozy"] .cat-chip.active,
+  [data-style="cozy"] .cal-cell.sel {
+    background: var(--accent-dim);
+    border-color: transparent;
+  }
+
+  /* Cozy: timer ring amber, no green glow/animations */
+  [data-style="cozy"] .timer-ring-progress{stroke:#d4b48c;filter:none}
+  [data-style="cozy"] .ring-ambient,[data-style="cozy"] .ring-inner,[data-style="cozy"] .ring-focus{background:none;opacity:0}
+  [data-style="cozy"] .ambient-glow,
+  [data-theme="light"] .ambient-glow { display: none; }
+
+  /* ===== Glassmorphism — Classic Dark only ===== */
+  /* 毛玻璃面板：透过功能栏看到背后的绿色光晕流动 */
+
+  /* ① 窗口标题栏 + 全局顶栏 — 完全透明，文字白色 */
+  [data-theme="dark"][data-style="classic"] .titlebar {
+    background: transparent !important;
+    border-bottom-color: transparent !important;
+  }
+  [data-theme="dark"][data-style="classic"] .titlebar-title {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .topbar {
+    background: transparent !important;
+  }
+  /* 所有文字/按钮统一为柔和白 #c0c0c0（比纯白稍灰，清晰不刺眼） */
+  [data-theme="dark"][data-style="classic"] .topbar-date,
+  [data-theme="dark"][data-style="classic"] .theme-toggle,
+  [data-theme="dark"][data-style="classic"] .lang-toggle,
+  [data-theme="dark"][data-style="classic"] .btn-gear,
+  [data-theme="dark"][data-style="classic"] .style-toggle,
+  [data-theme="dark"][data-style="classic"] .mode-tab,
+  [data-theme="dark"][data-style="classic"] .cat-chip,
+  [data-theme="dark"][data-style="classic"] .cat-chip.active,
+  [data-theme="dark"][data-style="classic"] .panel-tab,
+  [data-theme="dark"][data-style="classic"] .date-nav-today,
+  [data-theme="dark"][data-style="classic"] .date-nav-btn,
+  [data-theme="dark"][data-style="classic"] .task-note-input,
+  [data-theme="dark"][data-style="classic"] .timer-label,
+  [data-theme="dark"][data-style="classic"] .timer-sub,
+  [data-theme="dark"][data-style="classic"] .sessions-label,
+  [data-theme="dark"][data-style="classic"] .focus-time-label,
+  [data-theme="dark"][data-style="classic"] .btm-progress .lbl,
+  [data-theme="dark"][data-style="classic"] .btm-progress .pct,
+  [data-theme="dark"][data-style="classic"] .cal-cell,
+  [data-theme="dark"][data-style="classic"] .cal-detail-title,
+  [data-theme="dark"][data-style="classic"] .cal-detail-subtitle,
+  [data-theme="dark"][data-style="classic"] .heatmap-legend,
+  [data-theme="dark"][data-style="classic"] input::placeholder,
+  [data-theme="dark"][data-style="classic"] select {
+    color: #c0c0c0 !important;
+  }
+  /* 遗漏的按键/文字 — Reset / +号 / 底部统计（含左侧Done/Focus/Pomo + 右侧进度） */
+  [data-theme="dark"][data-style="classic"] .btn-ghost,
+  [data-theme="dark"][data-style="classic"] .btn-circle,
+  [data-theme="dark"][data-style="classic"] .task-input-wrap button,
+  [data-theme="dark"][data-style="classic"] .task-count-wrap,
+  [data-theme="dark"][data-style="classic"] .task-item .task-text,
+  [data-theme="dark"][data-style="classic"] .task-item .task-count,
+  [data-theme="dark"][data-style="classic"] .btm-item .v,
+  [data-theme="dark"][data-style="classic"] .btm-item .l,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info .lbl,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info .pct,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info .done-val,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info .focus-val,
+  [data-theme="dark"][data-style="classic"] .btm-progress .info .pom-val {
+    color: #c0c0c0 !important;
+  }
+  /* 底部统计数字稍亮一点 — 已统一为 #cccccc，不再单独覆盖 */
+
+  /* ② 背景容器 — 全透明（body 保底色，光晕直接透到面板下） */
+  [data-theme="dark"][data-style="classic"] .app {
+    background: transparent !important;
+  }
+
+
+  /* ③ 面板背景 — 统一透明度 */
+  [data-theme="dark"][data-style="classic"] .panel {
+    background: rgba(18, 18, 18, 0.28) !important;
+    backdrop-filter: blur(20px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  }
+
+  /* ④ 底部统计栏 — 与面板统一透明度（含父容器 .btm）*/
+  [data-theme="dark"][data-style="classic"] .btm {
+    background: transparent !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btm-progress {
+    background: rgba(18, 18, 18, 0.28) !important;
+    backdrop-filter: blur(20px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+
+  /* ④ 按键 — 透明度降 30% */
+  [data-theme="dark"][data-style="classic"] .mode-tabs {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.035);
+  }
+  [data-theme="dark"][data-style="classic"] .mode-tab {
+    background: transparent;
+  }
+  [data-theme="dark"][data-style="classic"] .mode-tab.active {
+    background: rgba(30, 215, 96, 0.07);
+  }
+  [data-theme="dark"][data-style="classic"] .cat-chip {
+    background: rgba(255, 255, 255, 0.028);
+    border-color: rgba(255, 255, 255, 0.042);
+  }
+  [data-theme="dark"][data-style="classic"] .cat-chip.active {
+    background: rgba(30, 215, 96, 0.08);
+    border-color: rgba(30, 215, 96, 0.15);
+  }
+
+  /* ⑤ 任务项 — 配合面板更透明 */
+  [data-theme="dark"][data-style="classic"] .task-item {
+    background: rgba(255, 255, 255, 0.014);
+    border-color: rgba(255, 255, 255, 0.028);
+    box-shadow: none;
+  }
+  [data-theme="dark"][data-style="classic"] .task-item:hover {
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  /* ⑥ 功能按钮 — 更透明 */
+  [data-theme="dark"][data-style="classic"] .btn-solid {
+    background: rgba(30, 200, 90, 0.15) !important;
+    border-color: rgba(30, 215, 96, 0.10) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btn-solid:hover {
+    background: rgba(30, 210, 95, 0.25) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btn-ghost {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btn-circle {
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .btn-circle:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* ⑦ 输入框 — 更透明 */
+  [data-theme="dark"][data-style="classic"] input,
+  [data-theme="dark"][data-style="classic"] select {
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
+  }
+  [data-theme="dark"][data-style="classic"] input:focus,
+  [data-theme="dark"][data-style="classic"] select:focus {
+    border-color: rgba(30, 215, 96, 0.25) !important;
+    box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.08) !important;
+  }
+  [data-style="cozy"] .pulse-ring{border-color:rgba(203,139,71,0.06)}
+  [data-style="cozy"] .timer-ring-wrap.is-running .timer-display{color:var(--text-primary);text-shadow:none;animation:none}
+  [data-style="cozy"] .timer-ring-wrap.is-running .timer-label{color:var(--text-faint);animation:none}
+  [data-style="cozy"] .timer-ring-wrap.is-running svg{animation:none}
+  [data-style="cozy"] .timer-ring-wrap.is-running .pulse-ring{animation:none}
+  [data-style="cozy"] .timer-ring-wrap.is-running{animation:none}
+  /* Cozy: daily progress - remove green tint */
+  [data-style="cozy"] .btm-progress{background:transparent}
+  [data-style="cozy"] .btm-progress .track .fill{background:#d4b48c}
+  /* Cozy: button hover no green glow */
+  [data-style="cozy"] .btn-solid:hover{box-shadow:var(--soft-outline),var(--depth-1)}
+  /* Cozy: date-nav-today button */
+  [data-style="cozy"] .date-nav-today{color:var(--text-tertiary)}
+  [data-style="cozy"] .date-nav-today:hover{color:var(--text-secondary)}
+  /* Cozy: no shadow on task items */
+  [data-style="cozy"] .task-item{box-shadow:none!important}
+  [data-style="cozy"] .task-item:hover{box-shadow:none!important}
+  /* Cozy: mode tab active border radius softer */
+  [data-style="cozy"] .mode-tab.active{border-radius:8px}
+
+  /* ============================================================
+     Timer Motion Keyframes
+     ============================================================ */
+  @keyframes energyDrift {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(30,215,96,0.15)) drop-shadow(0 0 16px rgba(30,215,96,0.04)); }
+    50% { filter: drop-shadow(0 0 8px rgba(30,215,96,0.20)) drop-shadow(0 0 20px rgba(30,215,96,0.06)); }
+  }
+  @keyframes ambientBreathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  @keyframes innerBreathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  @keyframes focusPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.08); }
+  }
+  @keyframes textBreathe {
+    0%, 100% { text-shadow: 0 0 32px rgba(30,215,96,0.06), 0 1px 3px rgba(0,0,0,0.4); }
+    50% { text-shadow: 0 0 40px rgba(30,215,96,0.10), 0 1px 3px rgba(0,0,0,0.4); }
+  }
+  @keyframes labelBreathe {
+    0%, 100% { color: rgba(30,215,96,0.3); }
+    50% { color: rgba(30,215,96,0.5); }
+  }
+  @keyframes ringPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<div class="titlebar" id="titlebar">
+  <span class="titlebar-title">Daily Flow Tracker</span>
+  <div class="titlebar-controls">
+    <button class="titlebar-btn" id="btnMin" aria-label="最小化">
+      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5h6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+    </button>
+    <button class="titlebar-btn" id="btnMax" aria-label="最大化">
+      <svg class="max-icon" width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.1" fill="none"/></svg>
+    </button>
+    <button class="titlebar-btn close" id="btnClose" aria-label="关闭">
+      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+    </button>
+  </div>
+</div>
+
+  <!-- ===== Top Bar ===== -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11.5" stroke="currentColor" stroke-width="2" color="var(--accent)"/>
+        <path d="M9.5 17V9l8 4-8 4z" fill="var(--accent)"/>
+      </svg>
+      <h1>Daily <span>Flow</span></h1>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="dateDisplay"></span>
+      <button class="style-toggle" id="styleToggle" aria-label="Switch style">
+        <span id="styleToggleLabel">Classic</span>
+      </button>
+      <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <!-- Sun icon (shown in dark mode, hidden in light) -->
+        <span id="themeIconSun" style="display:inline-flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </span>
+        <!-- Moon icon (shown in light mode, hidden in dark) -->
+        <span id="themeIconMoon" style="display:none;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </span>
+      </button>
+      <button class="lang-toggle" id="langToggle" aria-label="切换语言">
+        <span id="langIconZh" style="display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;">中</span>
+        <span id="langIconEn" style="display:none;align-items:center;justify-content:center;font-size:13px;font-weight:600;">EN</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Main Grid ===== -->
+  <div class="main-grid">
+
+    <!-- ===== LEFT: Timer ===== -->
+    <div class="panel timer-panel">
+      <div class="timer-header">
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="FOCUS">专注</button>
+          <button class="mode-tab" data-mode="SHORT_BREAK">短休</button>
+          <button class="mode-tab" data-mode="LONG_BREAK">长休</button>
+        </div>
+        <button class="btn-gear" id="gearBtn" aria-label="自定义时长">⚙</button>
+      </div>
+
+      <div class="timer-settings" id="timerSettings">
+        <div class="ts-row">
+          <label>专注</label>
+          <div class="ts-controls">
+            <button data-target="focus" data-dir="-1">−</button>
+            <span class="ts-val" id="sv-focus">25</span>
+            <button data-target="focus" data-dir="1">+</button>
+          </div>
+        </div>
+        <div class="ts-row">
+          <label>短休</label>
+          <div class="ts-controls">
+            <button data-target="short" data-dir="-1">−</button>
+            <span class="ts-val" id="sv-short">5</span>
+            <button data-target="short" data-dir="1">+</button>
+          </div>
+        </div>
+        <div class="ts-row">
+          <label>长休</label>
+          <div class="ts-controls">
+            <button data-target="long" data-dir="-1">−</button>
+            <span class="ts-val" id="sv-long">15</span>
+            <button data-target="long" data-dir="1">+</button>
+          </div>
+        </div>
+        <div class="ts-row">
+          <label data-i18n="autoStart">开机自启</label>
+          <label class="ts-toggle">
+            <input type="checkbox" id="autoStartToggle">
+            <span class="ts-toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="timer-ring-wrap" id="timerRingWrap">
+        <svg viewBox="0 0 180 180" width="190" height="190">
+          <defs>
+            <linearGradient id="energyFlow" x1="0.1" y1="0" x2="0.9" y2="1">
+              <stop offset="0%"   stop-color="#1ed760" stop-opacity="0.35"/>
+              <stop offset="20%"  stop-color="#1ed760" stop-opacity="0.50"/>
+              <stop offset="45%"  stop-color="#1ed760" stop-opacity="0.70"/>
+              <stop offset="65%"  stop-color="#1ed760" stop-opacity="0.90"/>
+              <stop offset="80%"  stop-color="#22e06a" stop-opacity="1"/>
+              <stop offset="92%"  stop-color="#1ed760" stop-opacity="0.85"/>
+              <stop offset="100%" stop-color="#1ed760" stop-opacity="0.60"/>
+            </linearGradient>
+          </defs>
+          <circle class="timer-ring-bg" cx="90" cy="90" r="83.8"/>
+          <circle class="timer-ring-progress" id="timerProgress" cx="90" cy="90" r="83.8"
+            stroke-dasharray="526.48" stroke-dashoffset="0"/>
+        </svg>
+
+        <div class="ring-ambient"></div>
+        <div class="ring-inner"></div>
+        <div class="ring-focus"></div>
+        <div class="pulse-ring"></div>
+
+        <div class="timer-center">
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerLabel">FOCUS</div>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="btn-solid" id="timerStartBtn">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <path d="M4 11.5V2.5l8 4.5-8 4.5z" fill="currentColor"/>
+          </svg>
+          开始
+        </button>
+        <button class="btn-ghost" id="timerResetBtn">
+          <svg width="11" height="11" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1.5 6.5a5 5 0 119.6 2"/>
+            <path d="M11.5 10.5V7H8"/>
+            <path d="M11.5 10.5A5 5 0 013 9"/>
+          </svg>
+          重置
+        </button>
+      </div>
+
+      <div class="timer-stats">
+        <div class="stat-item">
+          <span class="stat-icon">🍅</span>
+          <span class="stat-number" id="pomodoroCount">0</span>
+          <span class="stat-unit">/8</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-number" id="focusTimeDisplay">0</span>
+          <span class="stat-unit">m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT: Tasks / Calendar / Heatmap ===== -->
+    <div class="panel tasks-panel">
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-view="tasks">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 6.5l3 3L11 2"/>
+          </svg>
+          今日任务
+        </button>
+        <button class="panel-tab" data-view="calendar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1.5" y="2" width="9" height="8.5" rx="1"/>
+            <path d="M1.5 5h9"/>
+            <path d="M4 1v2M8 1v2"/>
+          </svg>
+          日历
+        </button>
+        <button class="panel-tab" data-view="heatmap">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="4" height="4" rx="1"/>
+            <rect x="7" y="1" width="4" height="4" rx="1"/>
+            <rect x="1" y="7" width="4" height="4" rx="1"/>
+            <rect x="7" y="7" width="4" height="4" rx="1"/>
+          </svg>
+          热力图
+        </button>
+      </div>
+
+      <!-- Tab Content Container -->
+      <div class="tab-wrap">
+
+        <!-- Tasks -->
+        <div class="tab-view active" id="vtasks">
+          <!-- Date Navigator -->
+          <div class="date-nav">
+            <button class="date-nav-btn" id="datePrev">‹</button>
+            <div class="date-nav-info">
+              <span class="date-nav-date" id="dateNavDate">今天</span>
+              <span class="date-nav-weekday" id="dateNavWeekday"></span>
+            </div>
+            <button class="date-nav-btn" id="dateNext">›</button>
+            <button class="date-nav-today" id="dateToday">今天</button>
+          </div>
+          <div class="task-input-wrap" style="margin-bottom:12px;">
+            <input type="text" id="taskInput" placeholder="写一个任务…" autocomplete="off">
+            <select id="taskCategory">
+              <option value="Work">💼</option>
+              <option value="Learning">📚</option>
+              <option value="Health">💪</option>
+              <option value="Life">🧹</option>
+              <option value="Goals">🎯</option>
+            </select>
+            <button class="btn-circle" id="taskAddBtn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M8 3v10M3 8h10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="cat-strip" style="margin-bottom:10px;">
+            <button class="cat-chip active" data-cat="all">全部</button>
+            <button class="cat-chip" data-cat="Work">💼 工作</button>
+            <button class="cat-chip" data-cat="Learning">📚 学习</button>
+            <button class="cat-chip" data-cat="Health">💪 健康</button>
+            <button class="cat-chip" data-cat="Life">🧹 生活</button>
+            <button class="cat-chip" data-cat="Goals">🎯 目标</button>
+          </div>
+          <div class="task-progress-row" style="margin-bottom:10px;">
+            <div class="bar"><div class="fill" id="taskProgressFill"></div></div>
+            <span class="label"><strong id="taskProgressNum">0</strong> / <span id="taskProgressTotal">0</span></span>
+          </div>
+          <div class="task-scroll" id="taskList">
+            <div class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v18M3 12h18"/>
+              </svg>
+              <span>今天还没有任务</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="tab-view" id="vcalendar">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" id="calPrev">‹</button>
+            <h3 id="calTitle">2026年5月</h3>
+            <button class="cal-nav-btn" id="calNext">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-detail" id="calDetail">
+            <div class="cal-detail-empty">点击某天查看详情</div>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="tab-view" id="vheatmap">
+          <div class="hm-wrap">
+            <div class="hm-head">
+              <h3>过去 12 周</h3>
+              <div class="hm-leg">
+                <span>少</span>
+                <span class="s"></span>
+                <span class="s"></span>
+                <span class="s"></span>
+                <span class="s"></span>
+                <span class="s"></span>
+                <span>多</span>
+              </div>
+            </div>
+            <div class="hm-scroll">
+              <div class="hm-tbl" id="hmTable"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-wrap -->
+    </div><!-- /tasks-panel -->
+  </div><!-- /main-grid -->
+
+  <!-- ===== Bottom Bar ===== -->
+  <div class="btm">
+    <div class="btm-item">
+      <div>
+        <div class="v" id="statTasks">0</div>
+        <div class="l">已完成</div>
+      </div>
+    </div>
+    <div class="btm-item">
+      <div>
+        <div class="v" id="statFocus">0m</div>
+        <div class="l">专注时长</div>
+      </div>
+    </div>
+    <div class="btm-item">
+      <div>
+        <div class="v" id="statPomodoros">0</div>
+        <div class="l">番茄完成</div>
+      </div>
+    </div>
+    <div class="btm-progress">
+      <div class="track"><div class="fill" id="dailyProgressFill"></div></div>
+      <div class="info">
+        <div class="pct" id="dailyProgressPct">0%</div>
+        <div class="lbl">每日进度</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Daily Flow Tracker v2.6 — with Dark/Light Theme
+   ============================================================ */
+
+/* ===== Ambient Glow Flow Animation (Classic Dark only) ===== */
+(function initAmbientGlow() {
+  const style = document.documentElement.getAttribute('data-style');
+  const theme = document.documentElement.getAttribute('data-theme');
+  if (style === 'cozy' || theme === 'light') return;
+
+  const glowContainer = document.createElement('div');
+  glowContainer.className = 'ambient-glow';
+  glowContainer.innerHTML =
+    '<div class="ambient-glow-layer outer"></div>' +
+    '<div class="ambient-glow-layer inner"></div>';
+  document.body.prepend(glowContainer);
+
+  if (!window.gsap) return;
+
+  const outer = glowContainer.querySelector('.outer');
+  const inner = glowContainer.querySelector('.inner');
+
+  // ── 外层：有机游走 — 明显可感知的流动，但始终覆盖屏幕 ──
+  gsap.to(outer, { x: "30%", duration: 9.5, ease: "sine.inOut", yoyo: true, repeat: -1 });
+  gsap.to(outer, { y: "24%", duration: 12.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -3.1 });
+  gsap.to(outer, { rotation: 7, duration: 19.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -7.0 });
+  gsap.to(outer, { opacity: 0.82, duration: 10.4, ease: "sine.inOut", yoyo: true, repeat: -1 });
+
+  // ── 内层：反向游走 + 错相（利萨如交汇） ──
+  gsap.to(inner, { x: "-22%", duration: 8.0, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -1.5 });
+  gsap.to(inner, { y: "18%", duration: 11.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -5.2 });
+  gsap.to(inner, { rotation: -5, duration: 24.0, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -12.0 });
+  gsap.to(inner, { opacity: 0.72, duration: 8.75, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -3.0 });
+})();
+function fmtTime(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function fmtDate(d) { const w=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${w[d.getDay()]}`; }
+function dkey(d) { return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function todayKey() { return dkey(new Date()); }
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+let tt;
+function toast(m) {
+  const e=document.getElementById('toast'); e.textContent=m; e.classList.add('show');
+  clearTimeout(tt);
+  if (window.gsap) {
+    gsap.killTweensOf(e);
+    gsap.fromTo(e, { scale: 0.92 }, { scale: 1, duration: 0.3, ease: "back.out(1.7)", clearProps: "transform" });
+  }
+  tt=setTimeout(()=>{
+    if (window.gsap) {
+      gsap.to(e, { opacity: 0, duration: 0.2, ease: "power2.in", onComplete: () => { e.classList.remove('show'); gsap.set(e, { clearProps: "opacity" }); } });
+    } else {
+      e.classList.remove('show');
+    }
+  }, 1900);
+}
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (err) {
+    console.error('Failed to persist data', err);
+    toast(t('toastSaveError'));
+    return false;
+  }
+}
+
+function playDoneSound() {
+  console.log("playDoneSound triggered");
+  window.electronAPI?.playBeep();
+}
+
+/* ——— Data File Bridge ——— */
+async function syncAllToFile() {
+  if (!window.electronAPI?.writeDataFile) return;
+  try {
+    const now = new Date().toISOString();
+    const data = {
+      updatedAt: now,
+      settings: loadSettings(),
+      theme: getThemePref(),
+      style: getStylePref(),
+      days: {}
+    };
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('dft_tasks_')) {
+        const dk = key.slice('dft_tasks_'.length);
+        if (!data.days[dk]) data.days[dk] = {};
+        try { data.days[dk].tasks = JSON.parse(localStorage.getItem(key)); } catch {}
+      }
+      if (key.startsWith('dft_stats_')) {
+        const dk = key.slice('dft_stats_'.length);
+        if (!data.days[dk]) data.days[dk] = {};
+        try { data.days[dk].stats = JSON.parse(localStorage.getItem(key)); } catch {}
+      }
+    }
+    await window.electronAPI.writeDataFile(data);
+    try { localStorage.setItem('dft_lastSyncAt', now); } catch {}
+  } catch (e) { console.error('Sync to file failed:', e); }
+}
+async function mergeFromFile() {
+  if (!window.electronAPI?.readDataFile) return;
+  try {
+    const fileData = await window.electronAPI.readDataFile();
+    if (!fileData || !fileData.days) return;
+    // Timestamp guard: skip if file is older than or equal to last sync
+    const lastSyncAt = (() => { try { return localStorage.getItem('dft_lastSyncAt'); } catch { return null; } })();
+    if (lastSyncAt && fileData.updatedAt && fileData.updatedAt <= lastSyncAt) {
+      return; // File is stale; app has more recent changes
+    }
+    let changed = false;
+    for (const [dk, day] of Object.entries(fileData.days)) {
+      if (day.tasks) { localStorage.setItem('dft_tasks_'+dk, JSON.stringify(day.tasks)); changed = true; }
+      if (day.stats) { localStorage.setItem('dft_stats_'+dk, JSON.stringify(day.stats)); changed = true; }
+    }
+    if (fileData.settings) { SET=fileData.settings; saveSettings(SET); upSetUI(); changed=true; }
+    if (fileData.theme) { setTheme(fileData.theme); changed=true; }
+    if (fileData.style) { setStyle(fileData.style); changed=true; }
+    if (changed) {
+      loadTasks(activeDay); renderTasks(); updateDateNav(); upAll(); renderHM();
+      if (document.getElementById('vcalendar')?.classList.contains('active')) renderCal();
+      toast(t('toastSynced'));
+    }
+    // Update lastSyncAt to file's timestamp so we don't re-merge stale data
+    try { localStorage.setItem('dft_lastSyncAt', fileData.updatedAt || new Date().toISOString()); } catch {}
+  } catch (e) { console.error('Merge from file failed:', e); }
+}
+
+/* ——— Theme ——— */
+function getThemePref() {
+  try { return localStorage.getItem('dft_theme') || 'dark'; } catch { return 'dark'; }
+}
+function setTheme(t) {
+  t = t === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeIconSun').style.display = t === 'dark' ? 'inline-flex' : 'none';
+  document.getElementById('themeIconMoon').style.display = t === 'light' ? 'inline-flex' : 'none';
+  try { localStorage.setItem('dft_theme', t); } catch {}
+}
+function toggleTheme() {
+  const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  setTheme(curTheme === 'dark' ? 'light' : 'dark');
+  syncAllToFile();
+}
+function getStylePref() {
+  try { return localStorage.getItem('dft_style') || 'classic'; } catch { return 'classic'; }
+}
+function setStyle(style) {
+  style = style === 'cozy' ? 'cozy' : 'classic';
+  document.documentElement.setAttribute('data-style', style);
+  const label = document.getElementById('styleToggleLabel');
+  if (label) label.textContent = style === 'cozy' ? 'Cozy' : 'Classic';
+  try { localStorage.setItem('dft_style', style); } catch {}
+}
+function toggleStyle() {
+  const cur = document.documentElement.getAttribute('data-style') || 'classic';
+  setStyle(cur === 'classic' ? 'cozy' : 'classic');
+  syncAllToFile();
+}
+
+/* ============================================================
+   Language — 中 / EN toggle (mirrors theme pattern)
+   ============================================================ */
+const LANG = {
+  zh: {
+    focus:'专注', shortBreak:'短休', longBreak:'长休',
+    focusLabel:'专注', shortLabel:'短休', longLabel:'长休',
+    start:'开始', pause:'暂停', resume:'继续', reset:'重置',
+    todayPomodoros:'🍅 今日',
+    tabTasks:'今日任务', tabCalendar:'日历', tabHeatmap:'热力图',
+    catAll:'全部', catWork:'💼 工作', catLearning:'📚 学习',
+    catClickHint:'点击切换分类',
+    catHealth:'💪 健康', catLife:'🧹 生活', catGoals:'🎯 目标',
+    taskPlaceholder:'写一个任务…', notePlaceholder:'写备注…',
+    dateToday:'今天',
+    emptyToday:'今天还没有任务', emptyDay:'这一天还没有任务', emptyCategory:'这个分类下还没有任务',
+    calTitle:'{y}年{m}月', calClickHint:'点击某天查看详情', calNoRecord:'这一天没有记录',
+    calTask:'任务', calPomodoro:'番茄',
+    hmTitle:'过去 12 周', hmLess:'少', hmMore:'多',
+    btmDone:'已完成', btmFocus:'专注时长', btmPomodoros:'番茄完成', btmDaily:'每日进度',
+    toastSaveError:'保存失败，请检查存储空间', toastNotFound:'未找到该任务', toastSynced:'📥 外部数据已同步',
+    toastAdded:'✅ 已添加', toastDone:'🎉 已完成', toastUpdated:'✏️ 已更新', toastDeleted:'🗑️ 已删除',
+    toastFocusComplete:'🍅 专注完成！第 ', toastPomodoro:' 个番茄', toastBreakEnd:'☕️ 休息结束',
+    confirmSwitchMode:'切换模式会中断当前计时，确定吗？',
+    ariaMinimize:'最小化', ariaMaximize:'最大化', ariaRestore:'还原', ariaClose:'关闭',
+    ariaTheme:'切换主题', ariaLang:'切换语言', gearLabel:'自定义时长',
+    wd:['日','一','二','三','四','五','六'],
+    hmDayN:['一','二','三','四','五','六','日'],
+    fromAlfred:'📥 Alfred: ',
+    autoStart:'开机自启',
+  },
+  en: {
+    focus:'Focus', shortBreak:'Short Break', longBreak:'Long Break',
+    focusLabel:'Focus', shortLabel:'Short', longLabel:'Long',
+    start:'Start', pause:'Pause', resume:'Resume', reset:'Reset',
+    todayPomodoros:'🍅 Today',
+    tabTasks:'Tasks', tabCalendar:'Calendar', tabHeatmap:'Heatmap',
+    catAll:'All', catWork:'💼 Work', catLearning:'📚 Study',
+    catClickHint:'Click to change category',
+    catHealth:'💪 Health', catLife:'🧹 Life', catGoals:'🎯 Goals',
+    taskPlaceholder:'Add a task…', notePlaceholder:'Add a note…',
+    dateToday:'Today',
+    emptyToday:'No tasks yet today', emptyDay:'No tasks on this day', emptyCategory:'No tasks in this category',
+    calTitle:'{m}/{y}', calClickHint:'Click a day to view details', calNoRecord:'No records for this day',
+    calTask:'Tasks', calPomodoro:'Pomodoros',
+    hmTitle:'Last 12 Weeks', hmLess:'Less', hmMore:'More',
+    btmDone:'Done', btmFocus:'Focus Time', btmPomodoros:'Pomodoros', btmDaily:'Daily Progress',
+    toastSaveError:'Save failed. Check storage space.', toastNotFound:'Task not found', toastSynced:'📥 Data synced',
+    toastAdded:'✅ Added', toastDone:'🎉 Completed', toastUpdated:'✏️ Updated', toastDeleted:'🗑️ Deleted',
+    toastFocusComplete:'🍅 Focus #', toastPomodoro:' complete!', toastBreakEnd:'☕️ Break over',
+    confirmSwitchMode:'Switching mode will reset the timer. Continue?',
+    ariaMinimize:'Minimize', ariaMaximize:'Maximize', ariaRestore:'Restore', ariaClose:'Close',
+    ariaTheme:'Toggle theme', ariaLang:'Switch language', gearLabel:'Timer settings',
+    wd:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    hmDayN:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    fromAlfred:'📥 Alfred: ',
+    autoStart:'Auto Start',
+  }
+};
+let _lang = 'zh';
+function t(key) {
+  const v = LANG[_lang][key];
+  return v !== undefined ? v : key;
+}
+function getLangPref() { try { return localStorage.getItem('dft_lang') || 'zh'; } catch { return 'zh'; } }
+function setLang(l) {
+  _lang = l;
+  document.documentElement.setAttribute('data-lang', l);
+  document.getElementById('langIconZh').style.display = l === 'en' ? 'inline-flex' : 'none';
+  document.getElementById('langIconEn').style.display = l === 'zh' ? 'inline-flex' : 'none';
+  try { localStorage.setItem('dft_lang', l); } catch {}
+  try { applyLang(); } catch (e) { console.error('applyLang error:', e); }
+  renderTasks(); updateDateNav(); upAll(); upT();
+  if (document.querySelector('#vcalendar.active')) renderCal();
+  if (document.querySelector('#vheatmap.active')) renderHM();
+}
+function toggleLang() {
+  setLang(_lang === 'zh' ? 'en' : 'zh');
+  syncAllToFile();
+}
+function applyLang() {
+  // Mode tabs
+  const modeMap = { FOCUS: 'focus', SHORT_BREAK: 'shortBreak', LONG_BREAK: 'longBreak' };
+  document.querySelectorAll('.mode-tab').forEach(tab => { if (modeMap[tab.dataset.mode]) tab.textContent = t(modeMap[tab.dataset.mode]); });
+  // Panel tabs — rebuild container children (event delegation on parent survives)
+  const panSvgs = {
+    tasks: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6.5l3 3L11 2"/></svg>',
+    calendar: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="8.5" rx="1"/><path d="M1.5 5h9"/><path d="M4 1v2M8 1v2"/></svg>',
+    heatmap: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="4" height="4" rx="1"/><rect x="7" y="1" width="4" height="4" rx="1"/><rect x="1" y="7" width="4" height="4" rx="1"/><rect x="7" y="7" width="4" height="4" rx="1"/></svg>'
+  };
+  const panelMap = { tasks:'tabTasks', calendar:'tabCalendar', heatmap:'tabHeatmap' };
+  const panContainer = document.querySelector('.panel-tabs');
+  if (panContainer) {
+    const curActive = panContainer.querySelector('.panel-tab.active');
+    const activeView = curActive ? curActive.dataset.view : 'tasks';
+    panContainer.innerHTML = ['tasks','calendar','heatmap'].map(view =>
+      `<button class="panel-tab${view===activeView?' active':''}" data-view="${view}">${panSvgs[view]}${t(panelMap[view])}</button>`
+    ).join('');
+    // Sync tab-view visibility to match
+    document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+    const targetId = {tasks:'vtasks',calendar:'vcalendar',heatmap:'vheatmap'}[activeView];
+    const target = document.getElementById(targetId);
+    if (target) target.classList.add('active');
+  }
+  // Category chips
+  const chipKeys = { all:'catAll', Work:'catWork', Learning:'catLearning', Health:'catHealth', Life:'catLife', Goals:'catGoals' };
+  document.querySelectorAll('.cat-chip').forEach(chip => { const k = chipKeys[chip.dataset.cat]; if (k) chip.textContent = t(k); });
+  // Timer settings labels
+  const tsKeys = ['focusLabel', 'shortLabel', 'longLabel', 'autoStart'];
+  document.querySelectorAll('.timer-settings .ts-row label').forEach((el, i) => { if (i < tsKeys.length) el.textContent = t(tsKeys[i]); });
+  // Timer stats — numeric, handled by upAll()
+  document.getElementById('pomodoroCount').textContent = T.sessions;
+  // Date nav "Today" button
+  const dtBtn = document.getElementById('dateToday');
+  if (dtBtn) dtBtn.textContent = t('dateToday');
+  // Timer control buttons
+  const startBtn = document.getElementById('timerStartBtn');
+  if (startBtn) startBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:2px;"><path d="M4 11.5V2.5l8 4.5-8 4.5z" fill="currentColor"/></svg> '+t('start');
+  const resetBtn = document.getElementById('timerResetBtn');
+  if (resetBtn) resetBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M1.5 6.5a5 5 0 119.6 2"/><path d="M11.5 10.5V7H8"/><path d="M11.5 10.5A5 5 0 013 9"/></svg> '+t('reset');
+  // Input placeholders
+  document.getElementById('taskInput').placeholder = t('taskPlaceholder');
+  // Bottom bar
+  const btmKeys = ['btmDone','btmFocus','btmPomodoros','btmDaily'];
+  document.querySelectorAll('.btm .l, .btm .lbl').forEach((el, i) => { if (i < btmKeys.length) el.textContent = t(btmKeys[i]); });
+  // Heatmap header
+  const hmTitle = document.querySelector('.hm-head h3');
+  if (hmTitle) hmTitle.textContent = t('hmTitle');
+  const legSpans = document.querySelectorAll('.hm-leg span:not(.s)');
+  if (legSpans.length >= 2) { legSpans[0].textContent = t('hmLess'); legSpans[legSpans.length-1].textContent = t('hmMore'); }
+  // Calendar click hint
+  document.querySelectorAll('.cal-detail-empty').forEach(el => { el.textContent = t('calClickHint'); });
+  // Gear aria-label
+  document.getElementById('gearBtn').ariaLabel = t('gearLabel');
+  // Titlebar buttons aria-label
+  const ariaKeys = { btnMin:'ariaMinimize', btnMax:'ariaMaximize', btnClose:'ariaClose' };
+  Object.entries(ariaKeys).forEach(([id, key]) => { const el = document.getElementById(id); if (el) el.ariaLabel = t(key); });
+}
+
+// Settings
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem('dft_settings'))||{focus:25,short:5,long:15}; } catch {}
+  return {focus:25,short:5,long:15};
+}
+function saveSettings(s) { return safeSet('dft_settings',s); }
+let SET = loadSettings();
+
+// Timer
+const CIRC=2*Math.PI*83.8;
+const T={mode:'FOCUS',state:'idle',_tl:(SET.focus||25)*60,endsAt:0,interval:null,sessions:0,focusSec:0,get timeLeft(){return this._tl;},set timeLeft(v){this._tl=Math.max(0,Math.ceil(v));}};
+function dur(m) {
+  const k=m==='FOCUS'?'focus':m==='SHORT_BREAK'?'short':'long';
+  return (SET[k]||25)*60;
+}
+function modeLbl(m) { return m==='FOCUS'?t('focus').toUpperCase():m==='SHORT_BREAK'?t('shortBreak').toUpperCase():t('longBreak').toUpperCase(); }
+
+function upT() {
+  document.getElementById('timerDisplay').textContent = fmtTime(T.timeLeft);
+  document.getElementById('timerLabel').textContent = modeLbl(T.mode);
+  const d = dur(T.mode);
+  document.getElementById('timerProgress').style.strokeDashoffset = CIRC*(1-T.timeLeft/d);
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===T.mode));
+  const wrap = document.getElementById('timerRingWrap');
+  wrap.classList.toggle('is-running', T.state==='running');
+  const btn = document.getElementById('timerStartBtn');
+  if (T.state==='running') {
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:2px;"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg> '+t('pause');
+    btn.classList.add('is-running');
+  } else {
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:2px;"><path d="M4 11.5V2.5l8 4.5-8 4.5z" fill="currentColor"/></svg> '+(T.state==='paused'?t('resume'):t('start'));
+    btn.classList.remove('is-running');
+  }
+}
+function tick() {
+  T.timeLeft=(T.endsAt-Date.now())/1000;
+  if (T.timeLeft<=0) {
+    completeTimer();
+    return;
+  }
+  upT();
+}
+function completeTimer() {
+  T.timeLeft=0; clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='idle';
+  if (T.mode==='FOCUS') { T.sessions++; T.focusSec+=dur('FOCUS'); toast(t('toastFocusComplete')+T.sessions+t('toastPomodoro')); playDoneSound(); switchMode('SHORT_BREAK'); }
+  else { toast(t('toastBreakEnd')); playDoneSound(); switchMode('FOCUS'); }
+  saveStats(); upAll(); upT();
+}
+function startT() { if(T.state==='running') return; if(T.timeLeft<=0) T.timeLeft=dur(T.mode); T.endsAt=Date.now()+T.timeLeft*1000; T.state='running'; T.interval=setInterval(tick,250); tick(); }
+function pauseT() { if(T.state!=='running') return; T.timeLeft=(T.endsAt-Date.now())/1000; clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='paused'; upT(); }
+function toggleT() { T.state==='running'?pauseT():startT(); }
+function resetT() { clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='idle'; T.timeLeft=dur(T.mode); upT(); }
+function switchMode(m) { clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='idle'; T.mode=m; T.timeLeft=dur(m); upT(); }
+
+function upSetUI() {
+  document.getElementById('sv-focus').textContent=SET.focus;
+  document.getElementById('sv-short').textContent=SET.short;
+  document.getElementById('sv-long').textContent=SET.long;
+}
+
+// Tasks
+let tasks=[];
+let af='all';
+let activeNoteId=null;
+let activeEditTextId=null;
+let activeDay=todayKey();
+let viewDate = new Date();
+const CCOL={Work:'#1ed760',Learning:'#539df5',Health:'#f3727f',Life:'#ffa42b',Goals:'#c084fc'};
+
+function dayData(k) {
+  try { const t=JSON.parse(localStorage.getItem('dft_tasks_'+k)||'[]'); const s=JSON.parse(localStorage.getItem('dft_stats_'+k)||'{}'); return {tasks:t,stats:s}; }
+  catch { return {tasks:[],stats:{}}; }
+}
+function loadTasks(k=todayKey()) { activeDay=k; const d=dayData(activeDay); tasks=d.tasks; if (k===todayKey()) { T.sessions=d.stats.pomodoros||0; T.focusSec=d.stats.focusSec||0; } }
+function saveTasks() { const r=safeSet('dft_tasks_'+activeDay,tasks); syncAllToFile(); return r; }
+function saveStats() { const r=safeSet('dft_stats_'+todayKey(),{pomodoros:T.sessions,focusSec:T.focusSec}); syncAllToFile(); return r; }
+function refreshDayIfNeeded() {
+  // Refresh timer stats from today's storage (don't override running state)
+  if (T.state==='running') return;
+  const d=dayData(todayKey());
+  T.sessions=d.stats.pomodoros||0; T.focusSec=d.stats.focusSec||0;
+  // Keep top-right date in sync — handles day transitions while app is running
+  document.getElementById('dateDisplay').textContent=fmtDate(new Date());
+  upAll();
+}
+function getViewKey() { return dkey(viewDate); }
+function goPrevDay() {
+  if (activeDay===todayKey()) saveStats();
+  viewDate.setDate(viewDate.getDate()-1);
+  loadTasks(getViewKey()); renderTasks(); updateDateNav(); upAll();
+}
+function goNextDay() {
+  if (activeDay===todayKey()) saveStats();
+  viewDate.setDate(viewDate.getDate()+1);
+  loadTasks(getViewKey()); renderTasks(); updateDateNav(); upAll();
+}
+function goToday() {
+  const k=todayKey();
+  if (activeDay!==k) {
+    viewDate=new Date();
+    loadTasks(k); renderTasks(); updateDateNav(); upAll();
+  }
+}
+function updateDateNav() {
+  const key=getViewKey(), isToday=key===todayKey();
+  const dt=new Date(viewDate);
+  document.getElementById('dateNavDate').textContent=isToday?t('dateToday'):`${dt.getMonth()+1}/${dt.getDate()}`;
+  document.getElementById('dateNavDate').className='date-nav-date'+(isToday?'':' not-today');
+  document.getElementById('dateNavWeekday').textContent=_lang==='zh'?'周'+LANG.zh.wd[dt.getDay()]:LANG.en.wd[dt.getDay()];
+  document.getElementById('dateToday').classList.toggle('show',!isToday);
+}
+function addTask(text,cat) {
+  if(!text.trim()) return;
+  refreshDayIfNeeded();
+  const task={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),text:text.trim(),cat:cat||'Work',done:false,note:''};
+  tasks.push(task);
+  if(!saveTasks()) { tasks=tasks.filter(t=>t.id!==task.id); return; }
+  renderTasks(); upAll(); toast(t('toastAdded'));
+  const el = document.querySelector(`.task-item[data-id="${task.id}"]`);
+  if (el && window.gsap) {
+    gsap.fromTo(el, { autoAlpha: 0, y: -10, scale: 0.97 },
+      { autoAlpha: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(1.4)" });
+  }
+}
+function toggleTask(id) { savePendingTextEdit(); const task=tasks.find(x=>x.id===id); if(!task) return; const prev=task.done; task.done=!task.done; if(!saveTasks()){task.done=prev;return;} renderTasks(); upAll(); if(task.done){ toast(t('toastDone')); playDoneSound(); } }
+function delTask(id) {
+  savePendingTextEdit();
+  const prev=tasks;
+  const el = document.querySelector(`.task-item[data-id="${id}"]`);
+  if (el && window.gsap) {
+    gsap.to(el, {
+      autoAlpha: 0, x: -15, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0,
+      duration: 0.2, ease: "power2.in",
+      onComplete: () => {
+        tasks=tasks.filter(x=>x.id!==id);
+        if(!saveTasks()){tasks=prev;renderTasks();upAll();return;}
+        renderTasks(); upAll();
+      }
+    });
+  } else {
+    tasks=tasks.filter(x=>x.id!==id);
+    if(!saveTasks()){tasks=prev;return;}
+    renderTasks(); upAll();
+  }
+}
+function savePendingTextEdit() {
+  if (!activeEditTextId) return;
+  const inp=document.querySelector(`.task-text-edit[data-id="${activeEditTextId}"]`);
+  if(inp){const t=tasks.find(x=>x.id===activeEditTextId);if(t&&t.text!==inp.value){t.text=inp.value;saveTasks();}}
+  activeEditTextId=null;
+}
+function renderTasks() {
+  const c=document.getElementById('taskList');
+  const f=af==='all'?tasks:tasks.filter(t=>t.cat===af);
+  if(f.length===0) {
+    c.innerHTML=`<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg><span>${tasks.length===0?(activeDay===todayKey()?t('emptyToday'):t('emptyDay')):t('emptyCategory')}</span></div>`;
+    return;
+  }
+  c.innerHTML = f.map(task =>
+    `<div class="task-item ${task.done?'done':''}" draggable="true" data-id="${task.id}">
+      <input type="checkbox" class="task-check" ${task.done?'checked':''} data-id="${task.id}">
+      <span class="task-dot" style="background:${CCOL[task.cat]||'#727272'}"></span>
+      ${activeEditTextId===task.id
+        ? `<input class="task-text-edit" data-id="${task.id}" value="${esc(task.text)}">`
+        : `<span class="task-text" data-id="${task.id}">${esc(task.text)}</span>`}
+      <button class="task-note-btn ${task.note?'has-note':''}" data-id="${task.id}">${task.note?'📝':'📄'}</button>
+      <button class="task-del" data-id="${task.id}">✕</button>
+    </div>
+    <div class="task-note-wrap" id="note-${task.id}" style="display:${activeNoteId===task.id?'block':'none'}">
+      <textarea class="task-note-input" data-id="${task.id}" placeholder="${t('notePlaceholder')}">${esc(task.note||'')}</textarea>
+    </div>`
+  ).join('');
+  c.querySelectorAll('.task-check').forEach(cb=>cb.addEventListener('change',()=>toggleTask(cb.dataset.id)));
+  c.querySelectorAll('.task-del').forEach(b=>b.addEventListener('click',()=>delTask(b.dataset.id)));
+  c.querySelectorAll('.task-note-btn').forEach(b=>b.addEventListener('click',()=>toggleNoteEditor(b.dataset.id)));
+  // Category cycling: click the colored dot to cycle through categories
+  const catOrder = Object.keys(CCOL);
+  c.querySelectorAll('.task-dot').forEach(dot=>{
+    dot.title = t('catClickHint');
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const id = dot.parentElement.dataset.id;
+      const task = tasks.find(x=>x.id===id);
+      if (!task) return;
+      const curIdx = catOrder.indexOf(task.cat);
+      task.cat = catOrder[(curIdx + 1) % catOrder.length];
+      saveTasks();
+      renderTasks();
+    });
+  });
+  // Inline text editing: double-click to edit
+  c.querySelectorAll('.task-text').forEach(el=>{
+    el.addEventListener('dblclick',()=>{
+      activeEditTextId=el.dataset.id;
+      renderTasks();
+      setTimeout(()=>{
+        const inp=document.querySelector(`.task-text-edit[data-id="${el.dataset.id}"]`);
+        if(inp){inp.focus();inp.select();}
+      },50);
+    });
+  });
+  c.querySelectorAll('.task-text-edit').forEach(inp=>{
+    const save=()=>{
+      const t=tasks.find(x=>x.id===inp.dataset.id);
+      if(t&&t.text!==inp.value){t.text=inp.value;saveTasks();}
+      activeEditTextId=null;
+      renderTasks();
+    };
+    inp.addEventListener('blur',save);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
+  });
+  c.querySelectorAll('.task-note-input').forEach(ta=>{
+    ta.addEventListener('blur',()=>{
+      const t=tasks.find(x=>x.id===ta.dataset.id);
+      if(t&&t.note!==ta.value){t.note=ta.value;saveTasks();}
+    });
+    ta.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ta.blur();}
+    });
+  });
+}
+
+/* ——— Drag & Drop sorting (event delegation) ——— */
+(function() {
+  const list = document.getElementById('taskList');
+  if (!list) return;
+
+  list.addEventListener('dragstart', (e) => {
+    const item = e.target.closest('.task-item');
+    if (!item) { e.preventDefault(); return; }
+    // Don't drag from interactive elements
+    if (e.target.closest('button, input, textarea, select')) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData('text/plain', item.dataset.id);
+    e.dataTransfer.effectAllowed = 'move';
+    item.classList.add('dragging');
+  });
+
+  list.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const item = e.target.closest('.task-item');
+    if (!item) return;
+
+    // Clear indicators from all items
+    list.querySelectorAll('.drag-over-before, .drag-over-after').forEach(el => {
+      el.classList.remove('drag-over-before', 'drag-over-after');
+    });
+
+    // Top half → insert at target's position (border-top), bottom half → insert after (border-bottom)
+    const rect = item.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    if (y < rect.height / 2) {
+      item.classList.add('drag-over-before');
+    } else {
+      item.classList.add('drag-over-after');
+    }
+  });
+
+  list.addEventListener('dragleave', (e) => {
+    const item = e.target.closest('.task-item');
+    if (!item) return;
+    // Only remove if truly leaving the task-item, not moving between its children
+    if (!e.relatedTarget || !item.contains(e.relatedTarget)) {
+      item.classList.remove('drag-over-before', 'drag-over-after');
+    }
+  });
+
+  list.addEventListener('drop', (e) => {
+    e.preventDefault();
+    list.querySelectorAll('.drag-over-before, .drag-over-after, .dragging').forEach(el => {
+      el.classList.remove('drag-over-before', 'drag-over-after', 'dragging');
+    });
+
+    const fromId = e.dataTransfer.getData('text/plain');
+    const targetItem = e.target.closest('.task-item');
+    if (!fromId || !targetItem || fromId === targetItem.dataset.id) return;
+
+    const fromIdx = tasks.findIndex(t => t.id === fromId);
+    const toId = targetItem.dataset.id;
+    const originalToIdx = tasks.findIndex(t => t.id === toId);
+    if (fromIdx === -1 || originalToIdx === -1) return;
+
+    // Determine insertion mode: after target (bottom half) or at target's position (top half)
+    const isAfter = targetItem.classList.contains('drag-over-after');
+
+    const [moved] = tasks.splice(fromIdx, 1);
+    const newToIdx = tasks.findIndex(t => t.id === toId);
+
+    let insertAt;
+    if (isAfter) {
+      // Bottom half → insert AFTER target
+      insertAt = newToIdx + 1;
+    } else {
+      // Top half → insert AT target's position (replace it)
+      // When dragging from earlier index, target shifted left by 1
+      insertAt = fromIdx < originalToIdx ? newToIdx + 1 : newToIdx;
+    }
+    tasks.splice(insertAt, 0, moved);
+
+    saveTasks();
+    renderTasks();
+  });
+
+  list.addEventListener('dragend', () => {
+    list.querySelectorAll('.dragging, .drag-over-before, .drag-over-after').forEach(el => {
+      el.classList.remove('dragging', 'drag-over-before', 'drag-over-after');
+    });
+  });
+})();
+
+function toggleNoteEditor(id) {
+  savePendingTextEdit();
+  // Save previously open note before switching
+  if (activeNoteId&&activeNoteId!==id) {
+    const prev=document.getElementById('note-'+activeNoteId);
+    if(prev){const p=prev.querySelector('.task-note-input');if(p){const t=tasks.find(x=>x.id===activeNoteId);if(t){t.note=p.value;saveTasks();}}}
+  }
+  activeNoteId=activeNoteId===id?null:id;
+  renderTasks();
+  if(activeNoteId===id){
+    setTimeout(()=>{
+      const ta=document.querySelector('#note-'+id+' .task-note-input');
+      if(ta){ta.focus();}
+    },50);
+  }
+}
+
+// Stats
+function upAll() {
+  const done=tasks.filter(t=>t.done).length, total=tasks.length;
+  document.getElementById('taskProgressNum').textContent=done;
+  document.getElementById('taskProgressTotal').textContent=total;
+  document.getElementById('taskProgressFill').style.width=total>0?`${(done/total)*100}%`:'0%';
+  document.getElementById('statTasks').textContent=done;
+  document.getElementById('statPomodoros').textContent=T.sessions;
+  document.getElementById('statFocus').textContent=Math.floor(T.focusSec/60)+'m';
+  document.getElementById('focusTimeDisplay').textContent=Math.floor(T.focusSec/60);
+  document.getElementById('pomodoroCount').textContent=T.sessions;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('dailyProgressPct').textContent=pct+'%';
+  document.getElementById('dailyProgressFill').style.width=pct+'%';
+}
+
+// Calendar
+let cy, cm, selDay;
+function renderCal() {
+  const g=document.getElementById('calGrid');
+  const calTitleTpl=t('calTitle');
+  document.getElementById('calTitle').textContent=calTitleTpl.replace('{y}',cy).replace('{m}',cm+1);
+  const f=new Date(cy,cm,1).getDay()||7, dim=new Date(cy,cm+1,0).getDate(), dip=new Date(cy,cm,0).getDate();
+  let h=LANG[_lang].wd.map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+  for(let i=f-1;i>=0;i--) h+=`<div class="cal-cell muted">${dip-i}</div>`;
+  const today=new Date();
+  for(let d=1;d<=dim;d++) {
+    const dt=new Date(cy,cm,d), key=dkey(dt), data=dayData(key);
+    const has=data.tasks.length>0||(data.stats.pomodoros||0)>0;
+    const isT=key===todayKey(), isSel=selDay===key;
+    let dot='';
+    if(has) {
+      const dn=data.tasks.filter(t=>t.done).length, sc=data.tasks.length>0?dn/data.tasks.length:0;
+      dot=`<span class="dot ${sc>0.5?'lvl2':'lvl1'}"></span>`;
+    }
+    h+=`<div class="cal-cell ${isT?'today':''} ${isSel?'sel':''}" data-key="${key}">${d}${dot}</div>`;
+  }
+  const total=f+dim, rem=(7-total%7)%7;
+  for(let i=1;i<=rem;i++) h+=`<div class="cal-cell muted">${i}</div>`;
+  g.innerHTML=h;
+  g.querySelectorAll('.cal-cell:not(.muted)').forEach(el=>{
+    el.addEventListener('click',()=>{selDay=el.dataset.key; renderCal(); showDay(el.dataset.key);});
+  });
+}
+function showDay(key) {
+  const d=document.getElementById('calDetail'), data=dayData(key);
+  const dt=new Date(key), dn=data.tasks.filter(t=>t.done).length, tl=data.tasks.length;
+  let h=`<h4>${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()}</h4>`;
+  h+=`<div class="meta"><span>✅ ${t('calTask')} <strong>${dn}/${tl}</strong></span><span>🍅 ${t('calPomodoro')} <strong>${data.stats.pomodoros||0}</strong></span><span>⏱ <strong>${Math.floor((data.stats.focusSec||0)/60)}m</strong></span></div>`;
+  if(data.tasks.length===0) h+=`<div class="cal-detail-empty">${t('calNoRecord')}</div>`;
+  else data.tasks.forEach(t=>{h+=`<div class="cal-detail-item ${t.done?'done':''}"><span class="task-dot" style="background:${CCOL[t.cat]||'#727272'}"></span>${esc(t.text)}</div>`;});
+  d.innerHTML=h;
+}
+
+// Heatmap
+function renderHM() {
+  const c=document.getElementById('hmTable');
+  const today=new Date(), weeks=12;
+  const dow=today.getDay()||7;
+  const end=new Date(today); end.setDate(today.getDate()-(dow-1)+6);
+  const start=new Date(end); start.setDate(end.getDate()-weeks*7+1);
+  const map={};
+  const d=new Date(start);
+  while(d<=end) {
+    const key=dkey(d), data=dayData(key);
+    const dn=data.tasks.filter(t=>t.done).length, tl=data.tasks.length;
+    const ts=tl>0?dn/tl:0, ps=Math.min((data.stats.pomodoros||0)/8,1), sc=ts*0.6+ps*0.4;
+    const lvl=sc===0?0:sc<=0.25?1:sc<=0.5?2:sc<=0.75?3:4;
+    map[key]={score:sc,lvl:lvl,tasks:`${dn}/${tl}`,pomos:data.stats.pomodoros||0};
+    d.setDate(d.getDate()+1);
+  }
+  let h='<div class="hm-ys">'+LANG[_lang].hmDayN.map(n=>`<span>${n}</span>`).join('')+'</div><div class="hm-cols">';
+  for(let w=0;w<weeks;w++) {
+    h+='<div class="hm-wk">';
+    for(let dy=0;dy<7;dy++) {
+      const cd=new Date(start); cd.setDate(start.getDate()+w*7+dy);
+      const key=dkey(cd), info=map[key], lvl=info?info.lvl:0;
+      const fut=cd>today;
+      const tip = info&&!fut ? `${key} ✅ ${info.tasks} 🍅 ${info.pomos}` : '';
+      h+=`<div class="hm-c" data-lvl="${fut?0:lvl}" style="${fut?'opacity:0.1':''}" title="${tip}"></div>`;
+    }
+    h+='</div>';
+  }
+  h+='</div>';
+  c.innerHTML=h;
+}
+
+// Tabs
+function switchTab(view) {
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===view));
+  document.querySelectorAll('.tab-view').forEach(el=>el.classList.remove('active'));
+  const m = {tasks:'vtasks',calendar:'vcalendar',heatmap:'vheatmap'};
+  const target = document.getElementById(m[view]);
+  if(target) target.classList.add('active');
+  if(view==='calendar') renderCal();
+  if(view==='heatmap') renderHM();
+}
+
+// Settings toggle
+document.getElementById('gearBtn').addEventListener('click', function(){
+  document.getElementById('timerSettings').classList.toggle('open');
+  this.classList.toggle('active');
+});
+document.querySelectorAll('.timer-settings .ts-controls button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=btn.dataset.target, d=parseInt(btn.dataset.dir);
+    const steps={focus:5,short:1,long:5}, mins={focus:[1,120],short:[1,30],long:[1,60]};
+    let v=SET[t]+d*steps[t]; v=Math.max(mins[t][0],Math.min(mins[t][1],v));
+    SET[t]=v; saveSettings(SET); upSetUI(); syncAllToFile();
+    const mm={focus:'FOCUS',short:'SHORT_BREAK',long:'LONG_BREAK'};
+    if(T.mode===mm[t]&&T.state==='idle'){T.timeLeft=dur(T.mode);upT();}
+  });
+});
+
+// Init
+document.addEventListener('DOMContentLoaded',()=>{
+  // Wire frameless titlebar controls
+  if (window.electronAPI) {
+    document.getElementById('btnMin').addEventListener('click', () => window.electronAPI.winMin());
+    document.getElementById('btnMax').addEventListener('click', () => window.electronAPI.winMax());
+    document.getElementById('btnClose').addEventListener('click', () => window.electronAPI.winClose());
+    window.electronAPI.onWinState?.(state => {
+      const btn=document.getElementById('btnMax');
+      btn.setAttribute('aria-label', state==='maximized' ? t('ariaRestore') : t('ariaMaximize'));
+      btn.classList.toggle('is-maximized', state==='maximized');
+    });
+  }
+
+  // Theme
+  setTheme(getThemePref());
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  setStyle(getStylePref());
+  document.getElementById('styleToggle').addEventListener('click', toggleStyle);
+
+  // Language
+  _lang = getLangPref();
+  setLang(_lang);
+  document.getElementById('langToggle').addEventListener('click', toggleLang);
+
+  document.getElementById('dateDisplay').textContent=fmtDate(new Date());
+  const n=new Date(); cy=n.getFullYear(); cm=n.getMonth(); selDay=null;
+  // Merge from data file FIRST to restore across version switches
+  mergeFromFile().then(() => {
+    upSetUI(); loadTasks(); renderTasks(); updateDateNav(); upAll(); upT();
+    syncAllToFile();
+  });
+
+  document.getElementById('timerStartBtn').addEventListener('click',toggleT);
+  document.getElementById('timerResetBtn').addEventListener('click',resetT);
+  document.querySelectorAll('.mode-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      if(T.state==='running'){if(!confirm(t('confirmSwitchMode'))) return; clearInterval(T.interval);T.interval=null;T.endsAt=0;T.state='idle';}
+      switchMode(tab.dataset.mode);
+    });
+  });
+
+  const inp=document.getElementById('taskInput');
+  document.getElementById('taskAddBtn').addEventListener('click',()=>{addTask(inp.value,document.getElementById('taskCategory').value);inp.value='';inp.focus();});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){addTask(inp.value,document.getElementById('taskCategory').value);inp.value='';}});
+  document.querySelectorAll('.cat-strip .cat-chip').forEach(p=>{
+    p.addEventListener('click',()=>{
+      document.querySelectorAll('.cat-strip .cat-chip').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active'); af=p.dataset.cat; renderTasks();
+    });
+  });
+
+  // Date navigation
+  document.getElementById('datePrev').addEventListener('click',goPrevDay);
+  document.getElementById('dateNext').addEventListener('click',goNextDay);
+  document.getElementById('dateToday').addEventListener('click',goToday);
+
+  // Event delegation on panel-tabs container (survives innerHTML changes)
+  document.querySelector('.panel-tabs').addEventListener('click', e => {
+    const tab = e.target.closest('.panel-tab');
+    if (tab) switchTab(tab.dataset.view);
+  });
+
+  document.getElementById('calPrev').addEventListener('click',()=>{cm--;if(cm<0){cm=11;cy--;}selDay=null;renderCal();document.getElementById('calDetail').innerHTML='<div class="cal-detail-empty">'+t('calClickHint')+'</div>';});
+  document.getElementById('calNext').addEventListener('click',()=>{cm++;if(cm>11){cm=0;cy++;}selDay=null;renderCal();document.getElementById('calDetail').innerHTML='<div class="cal-detail-empty">'+t('calClickHint')+'</div>';});
+
+  // HTTP bridge — trigger manual sync from Claude
+  if (window.electronAPI?.onTriggerSync) {
+    window.electronAPI.onTriggerSync(() => mergeFromFile());
+  }
+
+  // HTTP bridge — receive tasks from Claude in real time
+  if (window.electronAPI?.onExternalAddTask) {
+    window.electronAPI.onExternalAddTask((data) => {
+      const targetDate = data.date || activeDay;
+      const wasOnDate = activeDay === targetDate;
+      // Switch to the target date if needed
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      addTask(data.text, data.cat || 'Work');
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + data.text);
+    });
+  }
+
+  // HTTP bridge — update task from Claude (PATCH)
+  if (window.electronAPI?.onExternalPatchTask) {
+    window.electronAPI.onExternalPatchTask((data) => {
+      const targetDate = data.date || activeDay;
+      const wasOnDate = activeDay === targetDate;
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      const task = tasks.find(t => t.id === data.id);
+      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+      if (data.text !== undefined) task.text = data.text;
+      if (data.cat !== undefined) task.cat = data.cat;
+      if (data.done !== undefined) task.done = data.done;
+      saveTasks();
+      renderTasks();
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + t('toastUpdated'));
+    });
+  }
+
+  // HTTP bridge — delete task from Claude (DELETE)
+  if (window.electronAPI?.onExternalDeleteTask) {
+    window.electronAPI.onExternalDeleteTask((data) => {
+      const targetDate = data.date || activeDay;
+      const wasOnDate = activeDay === targetDate;
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      const task = tasks.find(t => t.id === data.id);
+      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+      delTask(data.id);
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + t('toastDeleted'));
+    });
+  }
+
+  // Fallback: poll data file every 60s (in case app was closed and reopened)
+  setInterval(() => mergeFromFile(), 60000);
+
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&T.state==='running') tick();});
+  setInterval(refreshDayIfNeeded,60000);
+
+  // Auto-start toggle — init from Electron settings
+  if (window.electronAPI) {
+    window.electronAPI.getAutoStart().then(enabled => {
+      const toggle = document.getElementById('autoStartToggle');
+      if (toggle) toggle.checked = enabled;
+    });
+    document.getElementById('autoStartToggle')?.addEventListener('change', (e) => {
+      window.electronAPI.setAutoStart(e.target.checked);
+    });
+  }
+
+  // Enable smooth transitions after initial render
+  document.documentElement.classList.add('theme-ready');
+});
+</script>
+</body>
+</html>

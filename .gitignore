@@ -1,0 +1,39 @@
+﻿# Dependencies
+node_modules/
+
+# Build output
+dist/
+release/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment / Secrets
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Electron builder
+*.exe
+!icon.ico
+
+# User data (tasks, pomodoros, settings)
+dft-data.json
+*.test_backup
+
+# Backup files
+backups/
+
+# Temp
+*.bak

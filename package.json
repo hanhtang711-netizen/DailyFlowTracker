@@ -1,0 +1,38 @@
+{
+  "name": "daily-flow-tracker",
+  "version": "1.0.0",
+  "description": "Daily Flow Tracker — 番茄钟 + 任务管理 + 日历热力图",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.dailyflow.tracker",
+    "productName": "Daily Flow Tracker",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "icon.ico"
+    ],
+    "icon": "icon.ico",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "DailyFlowTracker-${version}.${ext}",
+      "sign": false,
+      "signDlls": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^25.1.8"
+  }
+}
