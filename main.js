@@ -344,3 +344,17 @@ function playBeep() {
   } catch (e) { console.error("beep failed:", e); }
 }
 ipcMain.on("play-beep", playBeep);
+
+// Cache MP3 as base64 data URI for instant renderer-side playback
+let _beepDataUri = null;
+ipcMain.handle("get-beep-data", () => {
+  if (_beepDataUri) return _beepDataUri;
+  try {
+    if (fs.existsSync(BEEP_FILE)) {
+      const buf = fs.readFileSync(BEEP_FILE);
+      _beepDataUri = "data:audio/mpeg;base64," + buf.toString("base64");
+      return _beepDataUri;
+    }
+  } catch (e) { console.error("Failed to cache beep data URI:", e); }
+  return null;
+});

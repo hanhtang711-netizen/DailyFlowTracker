@@ -309,31 +309,35 @@ try {
   .titlebar { user-select: none; -webkit-user-select: none; }
 
   /* ===== Ambient Glow Layer (Classic Dark) ===== */
+  /* Three-layer mist: bg + mid + fg */
   .ambient-glow {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
     overflow: hidden;
   }
   .ambient-glow-layer {
     position: absolute;
-    width: 260%;
-    height: 260%;
-    top: -80%;
-    left: -80%;
-    background: var(--glow-ambient-outer);
-    filter: blur(75px);
+    border-radius: 50%;
+    filter: blur(80px);
     will-change: transform, opacity;
   }
-  .ambient-glow-layer.inner {
-    width: 220%;
-    height: 220%;
-    top: -60%;
-    left: -60%;
+  .ambient-glow-layer.bg {
+    width: 125%; height: 115%;
+    top: -7%; left: -12%;
+    background: var(--glow-ambient-outer);
+    filter: blur(85px);
+  }
+  .ambient-glow-layer.mid {
+    width: 100%; height: 90%;
+    top: 5%; left: 0%;
     background: var(--glow-ambient-inner);
-    filter: blur(65px);
-    filter: blur(36px);
+    filter: blur(55px);
+  }
+  .ambient-glow-layer.fg {
+    width: 80%; height: 70%;
+    top: 15%; left: 10%;
+    background: var(--glow-ambient-outer);
+    filter: blur(35px);
   }
   ::selection { background: var(--accent-dim); }
   ::-webkit-scrollbar { width: 4px; }
@@ -457,6 +461,36 @@ try {
 
   .topbar-right { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
 
+  /* ============================================================
+     Mist speed control
+     ============================================================ */
+  .mist-control {
+    display: flex; align-items: center; gap: 5px;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-cinematic);
+  }
+  [data-theme="dark"][data-style="classic"] .mist-control {
+    opacity: 1;
+  }
+  .mist-icon { color: var(--text-faint); flex-shrink: 0; }
+  .mist-slider {
+    width: 44px; height: 3px;
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px; outline: none; cursor: pointer;
+  }
+  .mist-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #1ed760;
+    border: none; cursor: pointer;
+    transition: transform 0.15s var(--ease-cinematic);
+  }
+  .mist-slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  .mist-slider:active::-webkit-slider-thumb { transform: scale(0.92); }
+  [data-theme="light"] .mist-slider { background: rgba(0,0,0,0.10); }
+  [data-theme="light"] .mist-slider::-webkit-slider-thumb { background: #1ed760; }
   /* ============================================================
      Custom Title Bar (Electron frameless)
      ============================================================ */
@@ -1047,6 +1081,77 @@ try {
     background: hsla(0,0%,0%,0.025);
   }
 
+  /* --- Custom category select --- */
+  .custom-select { position: relative; }
+  .custom-select-trigger {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 12px;
+    background: hsla(0,0%,100%,0.025);
+    border: 1px solid var(--border-light);
+    border-radius: var(--input-radius);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--text-tertiary);
+    cursor: pointer; outline: none;
+    white-space: nowrap;
+    transition: border-color 0.2s var(--ease-cinematic);
+  }
+  .custom-select-trigger:hover { border-color: var(--accent-dim); }
+  .custom-select-arrow {
+    width: 10px; height: 6px; flex-shrink: 0;
+    color: var(--text-faint);
+    transition: transform 0.2s var(--ease-cinematic);
+  }
+  .custom-select-arrow.open { transform: rotate(180deg); }
+  .custom-select-dropdown {
+    position: absolute; top: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    z-index: 200; min-width: 120px;
+    padding: 4px; border-radius: 8px; display: none;
+    background: rgba(18,18,18,0.32);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+  .custom-select-dropdown.open { display: block; }
+  .custom-select-option {
+    display: block; width: 100%;
+    padding: 7px 12px; border: none; border-radius: 5px;
+    background: transparent;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary); cursor: pointer;
+    text-align: left;
+    transition: background 0.15s var(--ease-cinematic);
+  }
+  .custom-select-option:hover {
+    background: rgba(255,255,255,0.07);
+    color: var(--text-primary);
+  }
+  /* Light */
+  [data-theme="light"][data-style="classic"] .custom-select-trigger {
+    background: hsla(0,0%,0%,0.025);
+  }
+  [data-theme="light"][data-style="classic"] .custom-select-dropdown {
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(24px);
+  }
+  [data-theme="light"][data-style="classic"] .custom-select-option:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--text-primary);
+  }
+  /* Cozy */
+  [data-style="cozy"] .custom-select-trigger {
+    background: var(--bg-panel);
+  }
+  [data-style="cozy"] .custom-select-dropdown {
+    background: var(--bg-panel);
+    backdrop-filter: blur(24px);
+  }
+  [data-style="cozy"] .custom-select-option:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary);
+  }
+
   .btn-circle {
     width: 34px; height: 34px;
     border: none; border-radius: var(--radius-compact);
@@ -1258,8 +1363,27 @@ try {
     border-color: var(--accent);
     box-shadow: 0 0 8px rgba(30,215,96,0.2);
   }
-  .task-check:checked::after { content: '✓'; color: var(--accent-text); font-size: 10px; font-weight: 800; }
+  .task-check:checked::after { content: none; }
   .task-check:hover:not(:checked) { border-color: var(--text-dim); }
+
+  /* -- Classic Dark checked: ripple, no fill/checkmark -- */
+  [data-theme="dark"][data-style="classic"] .task-check:checked {
+    animation: completeRipple 0.65s ease-out 1 forwards;
+    border-color: rgba(255,255,255,0.15);
+    background: transparent;
+    box-shadow: none;
+  }
+  [data-theme="dark"][data-style="classic"] .task-check:checked::after { content: none; }
+
+  /* -- Light mode: thin border, no fill/checkmark -- */
+  [data-theme="light"] .task-check { border: 1px solid rgba(0,0,0,0.10); background: transparent; }
+  [data-theme="light"] .task-check:checked { border-color: rgba(0,0,0,0.30); background: transparent; box-shadow: none; animation: none; }
+  [data-theme="light"] .task-check:checked::after { content: none; }
+
+  /* -- Cozy mode: thin border, no fill/checkmark -- */
+  [data-style="cozy"] .task-check { border: 1px solid rgba(0,0,0,0.15); background: transparent; }
+  [data-style="cozy"] .task-check:checked { border-color: rgba(255,255,255,0.25); background: transparent; box-shadow: none; animation: none; }
+  [data-style="cozy"] .task-check:checked::after { content: none; }
 
   .task-dot {
     width: 6px; height: 6px;
@@ -1837,6 +1961,12 @@ try {
       inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
   }
 
+  /* ③b 面板 Tab 条 — 与 mode-tabs 按键统一透明度 */
+  [data-theme="dark"][data-style="classic"] .panel-tabs {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.035);
+  }
+
   /* ④ 底部统计栏 — 与面板统一透明度（含父容器 .btm）*/
   [data-theme="dark"][data-style="classic"] .btm {
     background: transparent !important;
@@ -1866,6 +1996,22 @@ try {
   [data-theme="dark"][data-style="classic"] .cat-chip.active {
     background: rgba(30, 215, 96, 0.08);
     border-color: rgba(30, 215, 96, 0.15);
+  }
+  [data-theme="dark"][data-style="classic"] .style-toggle {
+    background: rgba(255, 255, 255, 0.028) !important;
+    border-color: rgba(255, 255, 255, 0.042) !important;
+    box-shadow: none !important;
+  }
+  [data-theme="dark"][data-style="classic"] .style-toggle:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    box-shadow: none !important;
+  }
+  [data-theme="dark"][data-style="classic"] .panel-tab {
+    background: transparent;
+  }
+  [data-theme="dark"][data-style="classic"] .panel-tab.active {
+    background: rgba(255, 255, 255, 0.04);
   }
 
   /* ⑤ 任务项 — 配合面板更透明 */
@@ -1962,6 +2108,13 @@ try {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 0.6; }
   }
+
+  /* ── Task complete ripple (Classic Dark) ── */
+  @keyframes completeRipple {
+    0% { box-shadow: 0 0 0 0 rgba(30,215,96,0.30); }
+    30% { box-shadow: 0 0 0 7px rgba(30,215,96,0.12); }
+    100% { box-shadow: 0 0 0 0 rgba(30,215,96,0); }
+  }
 </style>
 </head>
 <body>
@@ -2015,6 +2168,12 @@ try {
         <span id="langIconZh" style="display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;">中</span>
         <span id="langIconEn" style="display:none;align-items:center;justify-content:center;font-size:13px;font-weight:600;">EN</span>
       </button>
+      <div class="mist-control" id="mistControl" title="雾气漂移速度">
+        <svg class="mist-icon" width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+          <path d="M1.5 3h11M3 6h8M4.5 9h5"/>
+        </svg>
+        <input type="range" class="mist-slider" id="mistSlider" min="1" max="10" value="5" step="1">
+      </div>
     </div>
   </div>
 
@@ -2171,13 +2330,19 @@ try {
           </div>
           <div class="task-input-wrap" style="margin-bottom:12px;">
             <input type="text" id="taskInput" placeholder="写一个任务…" autocomplete="off">
-            <select id="taskCategory">
-              <option value="Work">💼</option>
-              <option value="Learning">📚</option>
-              <option value="Health">💪</option>
-              <option value="Life">🧹</option>
-              <option value="Goals">🎯</option>
-            </select>
+            <div class="custom-select" id="taskCategorySelect">
+              <button class="custom-select-trigger" id="taskCategoryTrigger">
+                <span id="taskCategoryValue">工作</span>
+                <svg class="custom-select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>
+              </button>
+              <div class="custom-select-dropdown" id="taskCategoryDropdown">
+                <button class="custom-select-option" data-cat="Work">工作</button>
+                <button class="custom-select-option" data-cat="Learning">学习</button>
+                <button class="custom-select-option" data-cat="Health">健康</button>
+                <button class="custom-select-option" data-cat="Life">生活</button>
+                <button class="custom-select-option" data-cat="Goals">目标</button>
+              </div>
+            </div>
             <button class="btn-circle" id="taskAddBtn">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M8 3v10M3 8h10"/>
@@ -2186,11 +2351,11 @@ try {
           </div>
           <div class="cat-strip" style="margin-bottom:10px;">
             <button class="cat-chip active" data-cat="all">全部</button>
-            <button class="cat-chip" data-cat="Work">💼 工作</button>
-            <button class="cat-chip" data-cat="Learning">📚 学习</button>
-            <button class="cat-chip" data-cat="Health">💪 健康</button>
-            <button class="cat-chip" data-cat="Life">🧹 生活</button>
-            <button class="cat-chip" data-cat="Goals">🎯 目标</button>
+            <button class="cat-chip" data-cat="Work">工作</button>
+            <button class="cat-chip" data-cat="Learning">学习</button>
+            <button class="cat-chip" data-cat="Health">健康</button>
+            <button class="cat-chip" data-cat="Life">生活</button>
+            <button class="cat-chip" data-cat="Goals">目标</button>
           </div>
           <div class="task-progress-row" style="margin-bottom:10px;">
             <div class="bar"><div class="fill" id="taskProgressFill"></div></div>
@@ -2281,36 +2446,48 @@ try {
    Daily Flow Tracker v2.6 — with Dark/Light Theme
    ============================================================ */
 
-/* ===== Ambient Glow Flow Animation (Classic Dark only) ===== */
-(function initAmbientGlow() {
-  const style = document.documentElement.getAttribute('data-style');
-  const theme = document.documentElement.getAttribute('data-theme');
-  if (style === 'cozy' || theme === 'light') return;
-
-  const glowContainer = document.createElement('div');
-  glowContainer.className = 'ambient-glow';
-  glowContainer.innerHTML =
-    '<div class="ambient-glow-layer outer"></div>' +
-    '<div class="ambient-glow-layer inner"></div>';
-  document.body.prepend(glowContainer);
-
+/* ===== Ambient Glow System (Classic Dark) ===== */
+let mistTweens = [];
+function ensureAmbientGlow() {
+  const s = document.documentElement.getAttribute('data-style');
+  const t = document.documentElement.getAttribute('data-theme');
+  if (s === 'cozy' || t === 'light') return;
+  if (document.querySelector('.ambient-glow')) return;
+  const c = document.createElement('div');
+  c.className = 'ambient-glow';
+  c.innerHTML = '<div class="ambient-glow-layer bg"></div><div class="ambient-glow-layer mid"></div><div class="ambient-glow-layer fg"></div>';
+  document.body.prepend(c);
   if (!window.gsap) return;
-
-  const outer = glowContainer.querySelector('.outer');
-  const inner = glowContainer.querySelector('.inner');
-
-  // ── 外层：有机游走 — 明显可感知的流动，但始终覆盖屏幕 ──
-  gsap.to(outer, { x: "30%", duration: 9.5, ease: "sine.inOut", yoyo: true, repeat: -1 });
-  gsap.to(outer, { y: "24%", duration: 12.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -3.1 });
-  gsap.to(outer, { rotation: 7, duration: 19.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -7.0 });
-  gsap.to(outer, { opacity: 0.82, duration: 10.4, ease: "sine.inOut", yoyo: true, repeat: -1 });
-
-  // ── 内层：反向游走 + 错相（利萨如交汇） ──
-  gsap.to(inner, { x: "-22%", duration: 8.0, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -1.5 });
-  gsap.to(inner, { y: "18%", duration: 11.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -5.2 });
-  gsap.to(inner, { rotation: -5, duration: 24.0, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -12.0 });
-  gsap.to(inner, { opacity: 0.72, duration: 8.75, ease: "sine.inOut", yoyo: true, repeat: -1, delay: -3.0 });
-})();
+  const sl = document.getElementById('mistSlider');
+  updateMistSpeed(sl ? parseInt(sl.value) : 5);
+}
+function updateMistSpeed(v) {
+  const f = Math.pow(5, (v - 5) / 5);
+  mistTweens.forEach(function(t) { if (t) t.kill(); });
+  mistTweens = [];
+  const con = document.querySelector('.ambient-glow');
+  if (!con || !window.gsap) return;
+  con.querySelectorAll('.ambient-glow-layer').forEach(function(l) {
+    // Position drift — continuous random movement
+    mistTweens.push(gsap.to(l, {
+      x: function() { return (Math.random() - 0.5) * 90 + '%'; },
+      y: function() { return (Math.random() - 0.5) * 90 + '%'; },
+      rotation: function() { return (Math.random() - 0.5) * 16; },
+      scale: function() { return 1 + Math.random() * 0.12; },
+      duration: function() { return (8 + Math.random() * 16) / f; },
+      ease: 'sine.inOut', repeat: -1, repeatRefresh: true
+    }));
+    // Opacity breathing — fade in & out like clouds forming/dissipating
+    mistTweens.push(gsap.fromTo(l,
+      { opacity: function() { return 0.12 + Math.random() * 0.18; } },
+      { opacity: function() { return 0.55 + Math.random() * 0.3; },
+        duration: function() { return (5 + Math.random() * 10) / f; },
+        ease: 'sine.inOut', yoyo: true, repeat: -1, repeatRefresh: true
+      }
+    ));
+  });
+}
+ensureAmbientGlow();
 function fmtTime(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
 function fmtDate(d) { const w=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${w[d.getDay()]}`; }
 function dkey(d) { return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
@@ -2346,8 +2523,33 @@ function safeSet(key, value) {
 
 function playDoneSound() {
   console.log("playDoneSound triggered");
+  // Eagerly fetched & cached MP3 via data URI (no IPC delay on playback)
+  if (window._beepAudio) {
+    window._beepAudio.currentTime = 0;
+    window._beepAudio.play().catch(function(e){ console.error('beep replay failed:', e); });
+    return;
+  }
+  // First call: fetch data URI from main process, then cache Audio element
+  if (window.electronAPI?.getBeepDataUri) {
+    window.electronAPI.getBeepDataUri().then(function(uri) {
+      if (uri) {
+        window._beepAudio = new Audio(uri);
+        window._beepAudio.volume = 0.5;
+        window._beepAudio.play().catch(function(e){ console.error('beep first-play failed:', e); });
+      }
+    });
+    return;
+  }
   window.electronAPI?.playBeep();
 }
+// Eagerly preload beep data URI at init so first ring is instant too
+setTimeout(function() {
+  if (window.electronAPI?.getBeepDataUri && !window._beepAudio) {
+    window.electronAPI.getBeepDataUri().then(function(uri) {
+      if (uri) { window._beepAudio = new Audio(uri); window._beepAudio.volume = 0.5; }
+    });
+  }
+}, 100);
 
 /* ——— Data File Bridge ——— */
 async function syncAllToFile() {
@@ -2416,6 +2618,8 @@ function setTheme(t) {
   document.getElementById('themeIconSun').style.display = t === 'dark' ? 'inline-flex' : 'none';
   document.getElementById('themeIconMoon').style.display = t === 'light' ? 'inline-flex' : 'none';
   try { localStorage.setItem('dft_theme', t); } catch {}
+  if (t === 'dark') ensureAmbientGlow();
+  renderTasks();
 }
 function toggleTheme() {
   const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -2431,6 +2635,8 @@ function setStyle(style) {
   const label = document.getElementById('styleToggleLabel');
   if (label) label.textContent = style === 'cozy' ? 'Cozy' : 'Classic';
   try { localStorage.setItem('dft_style', style); } catch {}
+  if (style === 'classic') ensureAmbientGlow();
+  renderTasks();
 }
 function toggleStyle() {
   const cur = document.documentElement.getAttribute('data-style') || 'classic';
@@ -2448,9 +2654,9 @@ const LANG = {
     start:'开始', pause:'暂停', resume:'继续', reset:'重置',
     todayPomodoros:'🍅 今日',
     tabTasks:'今日任务', tabCalendar:'日历', tabHeatmap:'热力图',
-    catAll:'全部', catWork:'💼 工作', catLearning:'📚 学习',
+    catAll:'全部', catWork:'工作', catLearning:'学习',
     catClickHint:'点击切换分类',
-    catHealth:'💪 健康', catLife:'🧹 生活', catGoals:'🎯 目标',
+    catHealth:'健康', catLife:'生活', catGoals:'目标',
     taskPlaceholder:'写一个任务…', notePlaceholder:'写备注…',
     dateToday:'今天',
     emptyToday:'今天还没有任务', emptyDay:'这一天还没有任务', emptyCategory:'这个分类下还没有任务',
@@ -2475,9 +2681,9 @@ const LANG = {
     start:'Start', pause:'Pause', resume:'Resume', reset:'Reset',
     todayPomodoros:'🍅 Today',
     tabTasks:'Tasks', tabCalendar:'Calendar', tabHeatmap:'Heatmap',
-    catAll:'All', catWork:'💼 Work', catLearning:'📚 Study',
+    catAll:'All', catWork:'Work', catLearning:'Study',
     catClickHint:'Click to change category',
-    catHealth:'💪 Health', catLife:'🧹 Life', catGoals:'🎯 Goals',
+    catHealth:'Health', catLife:'Life', catGoals:'Goals',
     taskPlaceholder:'Add a task…', notePlaceholder:'Add a note…',
     dateToday:'Today',
     emptyToday:'No tasks yet today', emptyDay:'No tasks on this day', emptyCategory:'No tasks in this category',
@@ -2545,6 +2751,11 @@ function applyLang() {
   // Category chips
   const chipKeys = { all:'catAll', Work:'catWork', Learning:'catLearning', Health:'catHealth', Life:'catLife', Goals:'catGoals' };
   document.querySelectorAll('.cat-chip').forEach(chip => { const k = chipKeys[chip.dataset.cat]; if (k) chip.textContent = t(k); });
+  // Task category select
+  document.querySelectorAll('.custom-select-option').forEach(opt => { const k = chipKeys[opt.dataset.cat]; if (k) opt.textContent = t(k); });
+  const curOpt = document.querySelector('.custom-select-option[data-cat="'+_taskCat+'"]');
+  const valEl = document.getElementById('taskCategoryValue');
+  if (curOpt && valEl) valEl.textContent = curOpt.textContent;
   // Timer settings labels
   const tsKeys = ['focusLabel', 'shortLabel', 'longLabel', 'autoStart'];
   document.querySelectorAll('.timer-settings .ts-row label').forEach((el, i) => { if (i < tsKeys.length) el.textContent = t(tsKeys[i]); });
@@ -2645,6 +2856,9 @@ let activeEditTextId=null;
 let activeDay=todayKey();
 let viewDate = new Date();
 const CCOL={Work:'#1ed760',Learning:'#539df5',Health:'#f3727f',Life:'#ffa42b',Goals:'#c084fc'};
+const CCOL_COZY={Work:'#d4a76a',Learning:'#b89575',Health:'#d4876a',Life:'#c4a05a',Goals:'#a89070'};
+function getCC(cat){return(document.documentElement.getAttribute('data-style')==='cozy'?CCOL_COZY:CCOL)[cat]||'#727272';}
+let _taskCat = 'Work';
 
 function dayData(k) {
   try { const t=JSON.parse(localStorage.getItem('dft_tasks_'+k)||'[]'); const s=JSON.parse(localStorage.getItem('dft_stats_'+k)||'{}'); return {tasks:t,stats:s}; }
@@ -2738,7 +2952,7 @@ function renderTasks() {
   c.innerHTML = f.map(task =>
     `<div class="task-item ${task.done?'done':''}" draggable="true" data-id="${task.id}">
       <input type="checkbox" class="task-check" ${task.done?'checked':''} data-id="${task.id}">
-      <span class="task-dot" style="background:${CCOL[task.cat]||'#727272'}"></span>
+      <span class="task-dot" style="background:${getCC(task.cat)}"></span>
       ${activeEditTextId===task.id
         ? `<input class="task-text-edit" data-id="${task.id}" value="${esc(task.text)}">`
         : `<span class="task-text" data-id="${task.id}">${esc(task.text)}</span>`}
@@ -2958,7 +3172,7 @@ function showDay(key) {
   let h=`<h4>${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()}</h4>`;
   h+=`<div class="meta"><span>✅ ${t('calTask')} <strong>${dn}/${tl}</strong></span><span>🍅 ${t('calPomodoro')} <strong>${data.stats.pomodoros||0}</strong></span><span>⏱ <strong>${Math.floor((data.stats.focusSec||0)/60)}m</strong></span></div>`;
   if(data.tasks.length===0) h+=`<div class="cal-detail-empty">${t('calNoRecord')}</div>`;
-  else data.tasks.forEach(t=>{h+=`<div class="cal-detail-item ${t.done?'done':''}"><span class="task-dot" style="background:${CCOL[t.cat]||'#727272'}"></span>${esc(t.text)}</div>`;});
+  else data.tasks.forEach(t=>{h+=`<div class="cal-detail-item ${t.done?'done':''}"><span class="task-dot" style="background:${getCC(t.cat)}"></span>${esc(t.text)}</div>`;});
   d.innerHTML=h;
 }
 
@@ -3065,14 +3279,52 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   const inp=document.getElementById('taskInput');
-  document.getElementById('taskAddBtn').addEventListener('click',()=>{addTask(inp.value,document.getElementById('taskCategory').value);inp.value='';inp.focus();});
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){addTask(inp.value,document.getElementById('taskCategory').value);inp.value='';}});
+  document.getElementById('taskAddBtn').addEventListener('click',()=>{addTask(inp.value,_taskCat);inp.value='';inp.focus();});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){addTask(inp.value,_taskCat);inp.value='';}});
   document.querySelectorAll('.cat-strip .cat-chip').forEach(p=>{
     p.addEventListener('click',()=>{
       document.querySelectorAll('.cat-strip .cat-chip').forEach(x=>x.classList.remove('active'));
       p.classList.add('active'); af=p.dataset.cat; renderTasks();
     });
   });
+
+  // Mist speed slider
+  var ms = document.getElementById('mistSlider');
+  if (ms) ms.addEventListener('input', function() {
+    var con = document.querySelector('.ambient-glow');
+    if (con && window.gsap) updateMistSpeed(parseInt(ms.value));
+  });
+
+  // Custom category select
+  const catTrigger = document.getElementById('taskCategoryTrigger');
+  const catDropdown = document.getElementById('taskCategoryDropdown');
+  const catValue = document.getElementById('taskCategoryValue');
+  if (catTrigger && catDropdown) {
+    catTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = catDropdown.classList.contains('open');
+      catDropdown.classList.toggle('open', !isOpen);
+      catTrigger.classList.toggle('open', !isOpen);
+      const arrow = catTrigger.querySelector('.custom-select-arrow');
+      if (arrow) arrow.classList.toggle('open', !isOpen);
+    });
+    catDropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        _taskCat = opt.dataset.cat;
+        catValue.textContent = opt.textContent;
+        catDropdown.classList.remove('open');
+        catTrigger.classList.remove('open');
+        const arrow = catTrigger.querySelector('.custom-select-arrow');
+        if (arrow) arrow.classList.remove('open');
+      });
+    });
+    document.addEventListener('click', () => {
+      catDropdown.classList.remove('open');
+      catTrigger.classList.remove('open');
+      const arrow = catTrigger.querySelector('.custom-select-arrow');
+      if (arrow) arrow.classList.remove('open');
+    });
+  }
 
   // Date navigation
   document.getElementById('datePrev').addEventListener('click',goPrevDay);

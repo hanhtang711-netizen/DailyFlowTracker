@@ -4,6 +4,31 @@
 
 ---
 
+## v1.2.0 — UI 精修 + 提示音优化 (260602)
+
+### 修复
+- **CSS 注释结构损坏 → 标题栏错位** — Mist control 样式块插入时破坏了标题栏注释的 `/* */` 配对，导致 `.titlebar { display: flex; }` 被 CSS 解析器丢弃，标题栏还原为 48.8px auto 高度
+- **Cozy 未完成复选框边框不可见** — `rgba(255,255,255,0.10)` 在 Cozy 浅棕背景 `#f8f2ea` 上近乎透明，改为 `rgba(0,0,0,0.15)`
+- **Classic Light 任务色点与 Cozy 混淆** — `setStyle()`/`setTheme()` 切换后未调用 `renderTasks()`，任务分类圆点的 inline `background` 保留上一主题颜色
+
+### 改进
+- **Classic Dark 玻璃质感统一** — `.panel-tabs` / `.panel-tab` / `.style-toggle` 统一为与 `.mode-tabs` 一致的 `rgba(255,255,255,0.02)` 背景 + `rgba(255,255,255,0.035)` 边框
+- **雾气呼吸动画** — 每层 GSAP 拆分为两个 tween：位置漂移（`repeatRefresh` 连续随机） + 透明度呼吸（`fromTo` + `yoyo` 渐显渐隐），移除 `.fg` 层的 `opacity` 硬编码冲突
+- **提示音零延迟** — 主进程将 MP3 缓存为 base64 data URI，渲染器预创建 `Audio` 元素实现即时回放，替代原先 PowerShell + WinMM.MCI 冷启动方案（延迟 1-3 秒）
+
+### 技术
+- `ipcMain.handle("get-beep-data")` + `preload.js` bridge — MP3 → base64 传输通道
+- GSAP 双 tween 分层设计（位置 + 透明度独立动画循环）
+- CSS 解析器调试：通过 `document.styleSheets[1].cssRules` 检查规则加载状态
+
+### 文件
+- `preview-timer.html` — 开发预览版（主改文件，CSS 注释修复 + 玻璃质感 + 呼吸动画 + 提示音）
+- `index.html` — 生产版（同步）
+- `main.js` — 新增 `get-beep-data` IPC handler + data URI 缓存
+- `preload.js` — 新增 `getBeepDataUri` bridge 方法
+
+---
+
 ## v1.1.0 — Ambient Glow + 毛玻璃 (260602)
 
 ### 新增

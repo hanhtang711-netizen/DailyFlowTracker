@@ -22,4 +22,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAutoStart: () => ipcRenderer.invoke("get-auto-start"),
   setAutoStart: (enabled) => ipcRenderer.invoke("set-auto-start", enabled),
   playBeep: () => ipcRenderer.send("play-beep"),
+  getBeepDataUri: () => ipcRenderer.invoke("get-beep-data"),
 });
