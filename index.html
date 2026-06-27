@@ -299,6 +299,7 @@ try {
     background-image: var(--body-overlay);
     color: var(--text-primary);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 20px;
@@ -346,10 +347,11 @@ try {
   ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
   .app {
-    width: 100%;
-    max-width: 960px;
+    width: 960px;
+    max-width: 100%;
     height: 100%;
     max-height: 720px;
+    margin: auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -559,7 +561,6 @@ try {
   .titlebar-btn.max   { background: #61c454; border: 1px solid #48a93b; }
   .titlebar-btn:hover { filter: brightness(0.8); }
   .titlebar-btn:active { filter: brightness(0.6); }
-
 
   /* ============================================================
      Grid
@@ -972,12 +973,11 @@ try {
     display: flex;
     justify-content: center;
     gap: 24px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border-light);
+    padding-top: 12px;
+    border-top: none;
     position: relative;
     z-index: 1;
     width: 100%;
-    margin-top: 4px;
   }
   .stat-item {
     display: flex;
@@ -992,12 +992,12 @@ try {
     font-size: 11.5px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    color: var(--text-dim);
+    color: var(--text-primary);
   }
   .stat-unit {
     font-size: 10px;
     font-weight: 400;
-    color: var(--text-faint);
+    color: var(--text-secondary);
   }
 
   /* ============================================================
@@ -2020,21 +2020,42 @@ try {
   }
 
 
-  /* ③ 面板背景 — 统一透明度 */
+  /* ③ 面板 — Liquid Glass */
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel {
-    background: rgba(18, 18, 18, 0.28) !important;
-    backdrop-filter: blur(20px) saturate(1.2) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    position: relative;
+    z-index: 1;
+    background: rgba(18, 18, 18, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+    border: none !important;
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+      -6px 2px 14px -8px rgba(0,0,0,0.18),
+       5px -1px 10px -7px rgba(0,0,0,0.12),
+       0 8px 28px -10px rgba(0,0,0,0.28),
+       0 20px 56px -16px rgba(0,0,0,0.22),
+       2px 12px 20px -14px rgba(0,0,0,0.15) !important;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(ellipse 90% 40% at 45% 0%, rgba(255,255,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 25% at 15% 15%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
   }
 
-  /* ③b 面板 Tab 条 — 与 mode-tabs 按键统一透明度 */
+  /* ③b 面板 Tab 条 — 纯透明 */
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tabs {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.035);
+    background: transparent;
+    border-color: transparent !important;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tab {
+    background: transparent;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tab.active {
+    background: rgba(255, 255, 255, 0.06);
   }
 
   /* ④ 底部统计栏 — 与面板统一透明度（含父容器 .btm）*/
@@ -2042,10 +2063,10 @@ try {
     background: transparent !important;
   }
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress {
-    background: rgba(18, 18, 18, 0.28) !important;
-    backdrop-filter: blur(20px) saturate(1.2) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top-color: transparent !important;
   }
 
   /* ④ 按键 — 透明度降 30% */
@@ -2101,6 +2122,17 @@ try {
   }
   [data-theme="dark"][data-style="classic"] .btn-solid:hover {
     background: rgba(30, 210, 95, 0.25) !important;
+  }
+  [data-style="aurora"] .btn-solid {
+    background: var(--btn-green-bg) !important;
+    color: var(--btn-green-text) !important;
+  }
+  [data-style="aurora"] .btn-solid:hover {
+    background: var(--btn-green-hover) !important;
+    color: var(--btn-green-text-hover) !important;
+  }
+  [data-style="aurora"] .btn-solid:active {
+    background: var(--btn-green-active) !important;
   }
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-ghost {
     background: rgba(255, 255, 255, 0.02) !important;
@@ -2270,7 +2302,9 @@ try {
 <div class="titlebar" id="titlebar">
   <div class="titlebar-controls">
     <button class="titlebar-btn close" id="btnClose" aria-label="关闭"></button>
-    <button class="titlebar-btn min" id="btnMin" aria-label="最小化"></button>
+    <button class="titlebar-btn min" id="btnMin" aria-label="最小化">
+      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5h6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+    </button>
     <button class="titlebar-btn max" id="btnMax" aria-label="全屏"></button>
   </div>
   <span class="titlebar-title">Daily Flow Tracker</span>
@@ -2431,18 +2465,6 @@ try {
         </button>
       </div>
 
-      <div class="timer-stats">
-        <div class="stat-item">
-          <span class="stat-icon">🍅</span>
-          <span class="stat-number" id="pomodoroCount">0</span>
-          <span class="stat-unit">/8</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">⏱</span>
-          <span class="stat-number" id="focusTimeDisplay">0</span>
-          <span class="stat-unit">m</span>
-        </div>
-      </div>
     </div>
 
     <!-- ===== RIGHT: Tasks / Calendar / Heatmap ===== -->
@@ -3054,8 +3076,7 @@ function applyLang() {
   // Timer settings labels
   const tsKeys = ['focusLabel', 'shortLabel', 'longLabel', 'autoStart'];
   document.querySelectorAll('.timer-settings .ts-row label').forEach((el, i) => { if (i < tsKeys.length) el.textContent = t(tsKeys[i]); });
-  // Timer stats — numeric, handled by upAll()
-  document.getElementById('pomodoroCount').textContent = T.sessions;
+  // Timer stats removed — handled by upAll() in btm bar
   // Date nav "Today" button
   const dtBtn = document.getElementById('dateToday');
   if (dtBtn) dtBtn.textContent = t('dateToday');
@@ -3426,8 +3447,6 @@ function upAll() {
   document.getElementById('statTasks').textContent=done;
   document.getElementById('statPomodoros').textContent=T.sessions;
   document.getElementById('statFocus').textContent=Math.floor(T.focusSec/60)+'m';
-  document.getElementById('focusTimeDisplay').textContent=Math.floor(T.focusSec/60);
-  document.getElementById('pomodoroCount').textContent=T.sessions;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   document.getElementById('dailyProgressPct').textContent=pct+'%';
   document.getElementById('dailyProgressFill').style.width=pct+'%';
@@ -3538,10 +3557,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('btnMin').addEventListener('click', () => window.electronAPI.winMin());
     document.getElementById('btnMax').addEventListener('click', () => window.electronAPI.winMax());
     document.getElementById('btnClose').addEventListener('click', () => window.electronAPI.winClose());
-    // Double-click titlebar → toggle maximize (macOS convention)
-    document.getElementById('titlebar').addEventListener('dblclick', () => {
-      window.electronAPI.winMax();
-    });
+    document.getElementById('titlebar').addEventListener('dblclick', () => { window.electronAPI.winMax(); });
     window.electronAPI.onWinState?.(state => {
       const btn=document.getElementById('btnMax');
       btn.setAttribute('aria-label', state==='maximized' ? t('ariaRestore') : t('ariaMaximize'));
@@ -3652,14 +3668,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   // HTTP bridge — receive tasks from Claude in real time
   if (window.electronAPI?.onExternalAddTask) {
     window.electronAPI.onExternalAddTask((data) => {
-      try {
-        savePendingTextEdit();
-        if (!data || typeof data.text !== 'string' || !data.text.trim()) { console.error('Bridge add: invalid data'); return; }
-        const targetDate = data.date || activeDay;
-        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
-        addTask(data.text, data.cat || 'Work');
-        updateDateNav();
-        toast(t('fromAlfred') + data.text);
+      try { savePendingTextEdit(); if (!data || typeof data.text !== 'string' || !data.text.trim()) { console.error('Bridge add: invalid data'); return; }
+      const targetDate = data.date || activeDay;
+      // Switch to the target date if needed
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      addTask(data.text, data.cat || 'Work');
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + data.text);
       } catch(e) { console.error('Bridge add error:', e); }
     });
   }
@@ -3667,18 +3685,21 @@ document.addEventListener('DOMContentLoaded',()=>{
   // HTTP bridge — update task from Claude (PATCH)
   if (window.electronAPI?.onExternalPatchTask) {
     window.electronAPI.onExternalPatchTask((data) => {
-      try {
-        savePendingTextEdit();
-        if (!data || !data.id) { console.error('Bridge patch: invalid data'); return; }
-        const targetDate = data.date || activeDay;
-        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
-        const task = tasks.find(t => t.id === data.id);
-        if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-        if (data.text !== undefined) task.text = data.text;
-        if (data.cat !== undefined) task.cat = data.cat;
-        if (data.done !== undefined) task.done = data.done;
-        saveTasks(); renderTasks(); updateDateNav();
-        toast(t('fromAlfred') + t('toastUpdated'));
+      try { savePendingTextEdit(); if (!data || !data.id) { console.error('Bridge patch: invalid data'); return; }
+      const targetDate = data.date || activeDay;
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      const task = tasks.find(t => t.id === data.id);
+      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+      if (data.text !== undefined) task.text = data.text;
+      if (data.cat !== undefined) task.cat = data.cat;
+      if (data.done !== undefined) task.done = data.done;
+      saveTasks();
+      renderTasks();
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + t('toastUpdated'));
       } catch(e) { console.error('Bridge patch error:', e); }
     });
   }
@@ -3686,15 +3707,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   // HTTP bridge — delete task from Claude (DELETE)
   if (window.electronAPI?.onExternalDeleteTask) {
     window.electronAPI.onExternalDeleteTask((data) => {
-      try {
-        savePendingTextEdit();
-        if (!data || !data.id) { console.error('Bridge delete: invalid data'); return; }
-        const targetDate = data.date || activeDay;
-        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
-        const task = tasks.find(t => t.id === data.id);
-        if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-        delTask(data.id); updateDateNav();
-        toast(t('fromAlfred') + t('toastDeleted'));
+      try { savePendingTextEdit(); if (!data || !data.id) { console.error('Bridge delete: invalid data'); return; }
+      const targetDate = data.date || activeDay;
+      if (targetDate !== activeDay) {
+        viewDate = new Date(targetDate);
+        loadTasks(targetDate);
+      }
+      const task = tasks.find(t => t.id === data.id);
+      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+      delTask(data.id);
+      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
+      toast(t('fromAlfred') + t('toastDeleted'));
       } catch(e) { console.error('Bridge delete error:', e); }
     });
   }
