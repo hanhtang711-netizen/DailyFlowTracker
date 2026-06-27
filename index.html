@@ -461,6 +461,43 @@ try {
 
   .topbar-right { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
 
+  /* ===== Aurora 顶栏控制 ===== */
+  .aurora-topbar { display: none; align-items: center; gap: 5px; }
+  [data-style="aurora"] .aurora-topbar { display: flex; }
+  [data-style="aurora"] .theme-toggle { display: none !important; }
+  [data-style="aurora"] .mist-control { display: none !important; }
+  .at-presets { display: flex; gap: 3px; align-items: center; }
+  .at-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    cursor: pointer; flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .at-dot:hover { border-color: rgba(255,255,255,0.3); transform: scale(1.15); }
+  .at-dot.active { border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.12); }
+  .at-slider {
+    width: 36px; height: 3px;
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px; outline: none; cursor: pointer;
+  }
+  .at-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: none; cursor: pointer;
+  }
+  .at-pause {
+    width: 22px; height: 22px;
+    border: none; border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    transition: all 0.2s ease;
+  }
+  .at-pause:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
   /* ============================================================
      Mist speed control
      ============================================================ */
@@ -469,7 +506,7 @@ try {
     opacity: 0;
     transition: opacity 0.3s var(--ease-cinematic);
   }
-  [data-theme="dark"][data-style="classic"] .mist-control {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .mist-control {
     opacity: 1;
   }
   .mist-icon { color: var(--text-faint); flex-shrink: 0; }
@@ -495,41 +532,34 @@ try {
      Custom Title Bar (Electron frameless)
      ============================================================ */
   .titlebar {
-    display: flex;
-    align-items: center;
-    height: 36px;
-    padding: 0 2px 0 16px;
-    background: var(--bg-body);
-    flex-shrink: 0;
+    display: flex; align-items: center;
+    height: 36px; padding: 0 10px;
+    background: var(--bg-body); flex-shrink: 0;
     border-bottom: 1px solid var(--border-light);
     -webkit-app-region: drag;
   }
   .titlebar-title {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.3px;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); letter-spacing: 0.3px;
+    pointer-events: none;
   }
+  .titlebar-spacer { flex: 1; -webkit-app-region: drag; }
   .titlebar-controls {
-    display: flex;
-    -webkit-app-region: no-drag;
-    gap: 1px;
+    display: flex; align-items: center;
+    -webkit-app-region: no-drag; gap: 8px; padding-left: 10px;
   }
   .titlebar-btn {
-    width: 36px; height: 28px;
-    border: none;
-    background: transparent;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.12s, color 0.12s;
-    border-radius: 4px;
+    width: 12px; height: 12px;
+    border: none; border-radius: 50%;
+    cursor: pointer; transition: filter 0.2s; padding: 0;
   }
-  .titlebar-btn svg { display: block; }
-  .titlebar-btn:hover { background: var(--bg-hover-strong); color: var(--text-primary); }
-  .titlebar-btn.close:hover { background: #e81123; color: #fff; }
-  .titlebar-btn.close:active { background: #bf0f1d; }
+  .titlebar-btn.close { background: #ed6a5e; border: 1px solid #d1503f; }
+  .titlebar-btn.min   { background: #f5bf4f; border: 1px solid #d6a03a; }
+  .titlebar-btn.max   { background: #61c454; border: 1px solid #48a93b; }
+  .titlebar-btn:hover { filter: brightness(0.8); }
+  .titlebar-btn:active { filter: brightness(0.6); }
+
 
   /* ============================================================
      Grid
@@ -1367,13 +1397,13 @@ try {
   .task-check:hover:not(:checked) { border-color: var(--text-dim); }
 
   /* -- Classic Dark checked: ripple, no fill/checkmark -- */
-  [data-theme="dark"][data-style="classic"] .task-check:checked {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-check:checked {
     animation: completeRipple 0.65s ease-out 1 forwards;
     border-color: rgba(255,255,255,0.15);
     background: transparent;
     box-shadow: none;
   }
-  [data-theme="dark"][data-style="classic"] .task-check:checked::after { content: none; }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-check:checked::after { content: none; }
 
   /* -- Light mode: thin border, no fill/checkmark -- */
   [data-theme="light"] .task-check { border: 1px solid rgba(0,0,0,0.10); background: transparent; }
@@ -1881,77 +1911,117 @@ try {
   /* Cozy: timer ring amber, no green glow/animations */
   [data-style="cozy"] .timer-ring-progress{stroke:#d4b48c;filter:none}
   [data-style="cozy"] .ring-ambient,[data-style="cozy"] .ring-inner,[data-style="cozy"] .ring-focus{background:none;opacity:0}
+
+  /* ===== Aurora: 极光进度条 ===== */
+  [data-style="aurora"] .timer-ring-progress {
+    stroke: url(#auroraFlow);
+    filter: drop-shadow(0 0 8px rgba(169,96,238,0.18))
+            drop-shadow(0 0 20px rgba(0,242,254,0.06));
+  }
+  [data-style="aurora"] .ring-ambient {
+    background: radial-gradient(ellipse 65% 65% at 62% 28%,
+      rgba(169,96,238,0.04) 0%, rgba(0,242,254,0.015) 35%, transparent 60%);
+  }
+  [data-style="aurora"] .ring-inner {
+    background: radial-gradient(ellipse 55% 45% at 58% 28%,
+      rgba(0,242,254,0.03) 0%, transparent 50%);
+  }
+  [data-style="aurora"] .ring-focus {
+    background: radial-gradient(circle,
+      rgba(169,96,238,0.06) 0%, rgba(169,96,238,0.02) 35%, transparent 65%);
+  }
   [data-style="cozy"] .ambient-glow,
+  [data-style="aurora"] .ambient-glow,
   [data-theme="light"] .ambient-glow { display: none; }
+
+  /* Aurora: 日历文字统一为玻璃白，不随极光色调整 */
+  [data-style="aurora"] .cal-hdr {
+    color: #c0c0c0;
+    opacity: 1;
+  }
+  [data-style="aurora"] .cal-nav h3 {
+    color: #c0c0c0;
+  }
+  [data-style="aurora"] .cal-nav-btn {
+    color: #c0c0c0;
+  }
+
+  /* Aurora: 任务文字亮白，毛玻璃上更清晰 */
+  [data-theme="dark"][data-style="aurora"] .task-item .task-text {
+    color: #f5f5f5 !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .task-item.done .task-text {
+    color: #999999 !important;
+  }
 
   /* ===== Glassmorphism — Classic Dark only ===== */
   /* 毛玻璃面板：透过功能栏看到背后的绿色光晕流动 */
 
   /* ① 窗口标题栏 + 全局顶栏 — 完全透明，文字白色 */
-  [data-theme="dark"][data-style="classic"] .titlebar {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .titlebar {
     background: transparent !important;
     border-bottom-color: transparent !important;
   }
-  [data-theme="dark"][data-style="classic"] .titlebar-title {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .titlebar-title {
     color: rgba(255, 255, 255, 0.5) !important;
   }
-  [data-theme="dark"][data-style="classic"] .topbar {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .topbar {
     background: transparent !important;
   }
   /* 所有文字/按钮统一为柔和白 #c0c0c0（比纯白稍灰，清晰不刺眼） */
-  [data-theme="dark"][data-style="classic"] .topbar-date,
-  [data-theme="dark"][data-style="classic"] .theme-toggle,
-  [data-theme="dark"][data-style="classic"] .lang-toggle,
-  [data-theme="dark"][data-style="classic"] .btn-gear,
-  [data-theme="dark"][data-style="classic"] .style-toggle,
-  [data-theme="dark"][data-style="classic"] .mode-tab,
-  [data-theme="dark"][data-style="classic"] .cat-chip,
-  [data-theme="dark"][data-style="classic"] .cat-chip.active,
-  [data-theme="dark"][data-style="classic"] .panel-tab,
-  [data-theme="dark"][data-style="classic"] .date-nav-today,
-  [data-theme="dark"][data-style="classic"] .date-nav-btn,
-  [data-theme="dark"][data-style="classic"] .task-note-input,
-  [data-theme="dark"][data-style="classic"] .timer-label,
-  [data-theme="dark"][data-style="classic"] .timer-sub,
-  [data-theme="dark"][data-style="classic"] .sessions-label,
-  [data-theme="dark"][data-style="classic"] .focus-time-label,
-  [data-theme="dark"][data-style="classic"] .btm-progress .lbl,
-  [data-theme="dark"][data-style="classic"] .btm-progress .pct,
-  [data-theme="dark"][data-style="classic"] .cal-cell,
-  [data-theme="dark"][data-style="classic"] .cal-detail-title,
-  [data-theme="dark"][data-style="classic"] .cal-detail-subtitle,
-  [data-theme="dark"][data-style="classic"] .heatmap-legend,
-  [data-theme="dark"][data-style="classic"] input::placeholder,
-  [data-theme="dark"][data-style="classic"] select {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .topbar-date,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .theme-toggle,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .lang-toggle,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-gear,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .style-toggle,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .mode-tab,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cat-chip,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cat-chip.active,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tab,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .date-nav-today,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .date-nav-btn,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-note-input,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-label,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-sub,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .sessions-label,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .focus-time-label,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .lbl,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .pct,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cal-cell,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cal-detail-title,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cal-detail-subtitle,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .heatmap-legend,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) input::placeholder,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) select {
     color: #c0c0c0 !important;
   }
   /* 遗漏的按键/文字 — Reset / +号 / 底部统计（含左侧Done/Focus/Pomo + 右侧进度） */
-  [data-theme="dark"][data-style="classic"] .btn-ghost,
-  [data-theme="dark"][data-style="classic"] .btn-circle,
-  [data-theme="dark"][data-style="classic"] .task-input-wrap button,
-  [data-theme="dark"][data-style="classic"] .task-count-wrap,
-  [data-theme="dark"][data-style="classic"] .task-item .task-text,
-  [data-theme="dark"][data-style="classic"] .task-item .task-count,
-  [data-theme="dark"][data-style="classic"] .btm-item .v,
-  [data-theme="dark"][data-style="classic"] .btm-item .l,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info .lbl,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info .pct,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info .done-val,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info .focus-val,
-  [data-theme="dark"][data-style="classic"] .btm-progress .info .pom-val {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-ghost,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-circle,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-input-wrap button,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-count-wrap,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-item .task-text,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-item .task-count,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-item .v,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-item .l,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info .lbl,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info .pct,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info .done-val,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info .focus-val,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress .info .pom-val {
     color: #c0c0c0 !important;
   }
   /* 底部统计数字稍亮一点 — 已统一为 #cccccc，不再单独覆盖 */
 
   /* ② 背景容器 — 全透明（body 保底色，光晕直接透到面板下） */
-  [data-theme="dark"][data-style="classic"] .app {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .app {
     background: transparent !important;
   }
 
 
   /* ③ 面板背景 — 统一透明度 */
-  [data-theme="dark"][data-style="classic"] .panel {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel {
     background: rgba(18, 18, 18, 0.28) !important;
     backdrop-filter: blur(20px) saturate(1.2) !important;
     -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
@@ -1962,16 +2032,16 @@ try {
   }
 
   /* ③b 面板 Tab 条 — 与 mode-tabs 按键统一透明度 */
-  [data-theme="dark"][data-style="classic"] .panel-tabs {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tabs {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.035);
   }
 
   /* ④ 底部统计栏 — 与面板统一透明度（含父容器 .btm）*/
-  [data-theme="dark"][data-style="classic"] .btm {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm {
     background: transparent !important;
   }
-  [data-theme="dark"][data-style="classic"] .btm-progress {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btm-progress {
     background: rgba(18, 18, 18, 0.28) !important;
     backdrop-filter: blur(20px) saturate(1.2) !important;
     -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
@@ -1979,52 +2049,52 @@ try {
   }
 
   /* ④ 按键 — 透明度降 30% */
-  [data-theme="dark"][data-style="classic"] .mode-tabs {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .mode-tabs {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.035);
   }
-  [data-theme="dark"][data-style="classic"] .mode-tab {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .mode-tab {
     background: transparent;
   }
-  [data-theme="dark"][data-style="classic"] .mode-tab.active {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .mode-tab.active {
     background: rgba(30, 215, 96, 0.07);
   }
-  [data-theme="dark"][data-style="classic"] .cat-chip {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cat-chip {
     background: rgba(255, 255, 255, 0.028);
     border-color: rgba(255, 255, 255, 0.042);
   }
-  [data-theme="dark"][data-style="classic"] .cat-chip.active {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .cat-chip.active {
     background: rgba(30, 215, 96, 0.08);
     border-color: rgba(30, 215, 96, 0.15);
   }
-  [data-theme="dark"][data-style="classic"] .style-toggle {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .style-toggle {
     background: rgba(255, 255, 255, 0.028) !important;
     border-color: rgba(255, 255, 255, 0.042) !important;
     box-shadow: none !important;
   }
-  [data-theme="dark"][data-style="classic"] .style-toggle:hover {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .style-toggle:hover {
     background: rgba(255, 255, 255, 0.05) !important;
     border-color: rgba(255, 255, 255, 0.07) !important;
     box-shadow: none !important;
   }
-  [data-theme="dark"][data-style="classic"] .panel-tab {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tab {
     background: transparent;
   }
-  [data-theme="dark"][data-style="classic"] .panel-tab.active {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel-tab.active {
     background: rgba(255, 255, 255, 0.04);
   }
 
   /* ⑤ 任务项 — 配合面板更透明 */
-  [data-theme="dark"][data-style="classic"] .task-item {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-item {
     background: rgba(255, 255, 255, 0.014);
     border-color: rgba(255, 255, 255, 0.028);
     box-shadow: none;
   }
-  [data-theme="dark"][data-style="classic"] .task-item:hover {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .task-item:hover {
     background: rgba(255, 255, 255, 0.035);
   }
 
-  /* ⑥ 功能按钮 — 更透明 */
+  /* ⑥ 功能按钮 — 更透明 (classic 用玻璃质感；aurora 由 JS 动态控制) */
   [data-theme="dark"][data-style="classic"] .btn-solid {
     background: rgba(30, 200, 90, 0.15) !important;
     border-color: rgba(30, 215, 96, 0.10) !important;
@@ -2032,28 +2102,28 @@ try {
   [data-theme="dark"][data-style="classic"] .btn-solid:hover {
     background: rgba(30, 210, 95, 0.25) !important;
   }
-  [data-theme="dark"][data-style="classic"] .btn-ghost {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-ghost {
     background: rgba(255, 255, 255, 0.02) !important;
   }
-  [data-theme="dark"][data-style="classic"] .btn-ghost:hover {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-ghost:hover {
     background: rgba(255, 255, 255, 0.05) !important;
   }
-  [data-theme="dark"][data-style="classic"] .btn-circle {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-circle {
     background: rgba(255, 255, 255, 0.025) !important;
     border-color: rgba(255, 255, 255, 0.04) !important;
   }
-  [data-theme="dark"][data-style="classic"] .btn-circle:hover {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-circle:hover {
     background: rgba(255, 255, 255, 0.06) !important;
   }
 
   /* ⑦ 输入框 — 更透明 */
-  [data-theme="dark"][data-style="classic"] input,
-  [data-theme="dark"][data-style="classic"] select {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) input,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) select {
     background: rgba(255, 255, 255, 0.025) !important;
     border-color: rgba(255, 255, 255, 0.04) !important;
   }
-  [data-theme="dark"][data-style="classic"] input:focus,
-  [data-theme="dark"][data-style="classic"] select:focus {
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) input:focus,
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) select:focus {
     border-color: rgba(30, 215, 96, 0.25) !important;
     box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.08) !important;
   }
@@ -2115,25 +2185,96 @@ try {
     30% { box-shadow: 0 0 0 7px rgba(30,215,96,0.12); }
     100% { box-shadow: 0 0 0 0 rgba(30,215,96,0); }
   }
+  /* ============================================================
+     Aurora — 极光动效背景层
+     ============================================================ */
+  .aurora-container {
+    position: fixed; inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .aurora-sky {
+    position: absolute; inset: 0;
+    background: #0a1025;
+  }
+  .aurora-bands {
+    position: absolute; inset: 0;
+    filter: url(#wave);
+    will-change: transform, filter;
+    transform: translateZ(0);
+  }
+  .aurora-band {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+    contain: layout style;
+    opacity: 0.7;
+  }
+  .band-1 {
+    width: 110%; height: 75%;
+    top: -8%; left: -20%;
+    background: radial-gradient(ellipse 70% 60% at 30% 40%, transparent 30%, #1ed760 42%, #4facfe 52%, transparent 68%);
+  }
+  .band-2 {
+    width: 90%; height: 65%;
+    bottom: -12%; right: -15%;
+    background: radial-gradient(ellipse 65% 55% at 55% 50%, transparent 32%, #a960ee 44%, #00f2fe 54%, transparent 66%);
+  }
+  .band-3 {
+    width: 130%; height: 35%;
+    top: 2%; left: -15%;
+    background: radial-gradient(ellipse 50% 70% at 50% 50%, transparent 35%, #4facfe 46%, #1ed760 56%, transparent 68%);
+  }
+  .band-4 {
+    width: 55%; height: 85%;
+    top: 8%; right: -10%;
+    background: radial-gradient(ellipse 50% 60% at 35% 50%, transparent 35%, #00f2fe 46%, #a960ee 56%, transparent 68%);
+  }
+  .band-5 {
+    width: 70%; height: 40%;
+    bottom: -5%; left: 15%;
+    background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 35%, #ff6b9d 45%, #ffd93d 55%, transparent 68%);
+    mix-blend-mode: overlay;
+    opacity: calc(0.7 * 0.4);
+  }
 </style>
 </head>
 <body>
 
+<!-- ===== SVG 滤镜 (极光波浪) ===== -->
+<svg style="position:absolute;width:0;height:0;" aria-hidden="true">
+  <defs>
+    <filter id="wave" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feturbulence id="turbulence" baseFrequency="0.002 0.002" numOctaves="2" seed="10" result="noise"/>
+      <fedisplacementmap in="SourceGraphic" in2="noise" scale="50" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ===== 极光背景层 ===== -->
+<div class="aurora-container">
+  <div class="aurora-sky"></div>
+  <div class="aurora-bands" id="auroraBands">
+    <div class="aurora-band band-1"></div>
+    <div class="aurora-band band-2"></div>
+    <div class="aurora-band band-3"></div>
+    <div class="aurora-band band-4"></div>
+    <div class="aurora-band band-5"></div>
+  </div>
+</div>
+
 <div class="app">
 
 <div class="titlebar" id="titlebar">
-  <span class="titlebar-title">Daily Flow Tracker</span>
   <div class="titlebar-controls">
-    <button class="titlebar-btn" id="btnMin" aria-label="最小化">
-      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5h6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
-    </button>
-    <button class="titlebar-btn" id="btnMax" aria-label="最大化">
-      <svg class="max-icon" width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.1" fill="none"/></svg>
-    </button>
-    <button class="titlebar-btn close" id="btnClose" aria-label="关闭">
-      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
-    </button>
+    <button class="titlebar-btn close" id="btnClose" aria-label="关闭"></button>
+    <button class="titlebar-btn min" id="btnMin" aria-label="最小化"></button>
+    <button class="titlebar-btn max" id="btnMax" aria-label="全屏"></button>
   </div>
+  <span class="titlebar-title">Daily Flow Tracker</span>
+  <div class="titlebar-spacer"></div>
 </div>
 
   <!-- ===== Top Bar ===== -->
@@ -2150,6 +2291,19 @@ try {
       <button class="style-toggle" id="styleToggle" aria-label="Switch style">
         <span id="styleToggleLabel">Classic</span>
       </button>
+      <!-- Aurora 顶栏控制（仅 aurora 模式显示） -->
+      <div class="aurora-topbar" id="auroraTopbar">
+        <div class="at-presets">
+          <div class="at-dot active" data-preset="dft"   style="background:linear-gradient(135deg,#1ed760,#4facfe);" title="DFT"></div>
+          <div class="at-dot" data-preset="aurora" style="background:linear-gradient(135deg,#a960ee,#00f2fe);" title="极光"></div>
+          <div class="at-dot" data-preset="sunset" style="background:linear-gradient(135deg,#ff6b6b,#ffd93d);" title="日落"></div>
+          <div class="at-dot" data-preset="neon"   style="background:linear-gradient(135deg,#ff3366,#00ff88);" title="霓虹"></div>
+          <div class="at-dot" data-preset="ocean"  style="background:linear-gradient(135deg,#0ea5e9,#06b6d4);" title="深海"></div>
+        </div>
+        <input type="range" class="at-slider" id="atSpeed" min="0.1" max="3" step="0.1" value="1.0" title="流速">
+        <input type="range" class="at-slider" id="atIntensity" min="0.05" max="1" step="0.05" value="0.7" title="强度">
+        <button class="at-pause" id="atPause" title="暂停">⏸</button>
+      </div>
       <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
         <!-- Sun icon (shown in dark mode, hidden in light) -->
         <span id="themeIconSun" style="display:inline-flex;align-items:center;justify-content:center;">
@@ -2236,6 +2390,12 @@ try {
               <stop offset="80%"  stop-color="#22e06a" stop-opacity="1"/>
               <stop offset="92%"  stop-color="#1ed760" stop-opacity="0.85"/>
               <stop offset="100%" stop-color="#1ed760" stop-opacity="0.60"/>
+            </linearGradient>
+            <!-- Aurora 进度条渐变（JS 动态更新色值） -->
+            <linearGradient id="auroraFlow" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#a960ee"/>
+              <stop offset="50%"  stop-color="#00f2fe"/>
+              <stop offset="100%" stop-color="#4facfe"/>
             </linearGradient>
           </defs>
           <circle class="timer-ring-bg" cx="90" cy="90" r="83.8"/>
@@ -2446,12 +2606,118 @@ try {
    Daily Flow Tracker v2.6 — with Dark/Light Theme
    ============================================================ */
 
+/* ===== Aurora 极光动画引擎 (替换原 Ambient Glow) ===== */
+const _turbulence = document.getElementById('turbulence');
+const _auroraContainer = document.querySelector('.aurora-container');
+const _auroraBands = document.querySelectorAll('.aurora-band');
+
+// 各 band 基础变换（原 CSS 中移除，由 JS 统一管理以便合成漂移动画）
+const _bandBaseXform = [
+  'rotate(-18deg) scaleX(1.4)',
+  'rotate(28deg) scaleX(1.3)',
+  'rotate(-4deg) scaleX(0.9)',
+  'rotate(12deg) scaleX(1.6)',
+  'rotate(5deg) scaleX(1.2)',
+];
+
+let _auroraSpeed = 1.0;
+let _auroraPaused = false;
+let _driftFrame = 0;
+const _rad = Math.PI / 180;
+
+// 色板预设
+const _auroraPresets = {
+  dft:    { c1:'#1ed760', c2:'#4facfe', c3:'#a960ee', c4:'#00f2fe', c5:'#ff6b9d', sky:'#0a1025' },
+  aurora: { c1:'#a960ee', c2:'#00f2fe', c3:'#4facfe', c4:'#90e0ff', c5:'#ff6b9d', sky:'#0a0a1a' },
+  sunset: { c1:'#ff6b6b', c2:'#ffd93d', c3:'#ff8a5c', c4:'#f7d794', c5:'#ff4757', sky:'#1a0a0a' },
+  neon:   { c1:'#ff3366', c2:'#00ff88', c3:'#ff6b6b', c4:'#00e5ff', c5:'#ffd93d', sky:'#0a0a1a' },
+  ocean:  { c1:'#0ea5e9', c2:'#06b6d4', c3:'#3b82f6', c4:'#2dd4bf', c5:'#f59e0b', sky:'#0a0f1a' },
+};
+
+function applyAuroraPreset(p) {
+  const g = [
+    'radial-gradient(ellipse 70% 60% at 30% 40%, transparent 30%, '+p.c1+' 42%, '+p.c2+' 52%, transparent 68%)',
+    'radial-gradient(ellipse 65% 55% at 55% 50%, transparent 32%, '+p.c3+' 44%, '+p.c4+' 54%, transparent 66%)',
+    'radial-gradient(ellipse 50% 70% at 50% 50%, transparent 35%, '+p.c2+' 46%, '+p.c1+' 56%, transparent 68%)',
+    'radial-gradient(ellipse 50% 60% at 35% 50%, transparent 35%, '+p.c4+' 46%, '+p.c3+' 56%, transparent 68%)',
+    'radial-gradient(ellipse 60% 50% at 50% 50%, transparent 35%, '+p.c5+' 45%, '+p.c4+' 55%, transparent 68%)',
+  ];
+  _auroraBands.forEach(function(b, i) { if (i < g.length) b.style.background = g[i]; });
+  document.querySelector('.aurora-sky').style.background = p.sky;
+  // 同步更新进度条 SVG 渐变为当前色板
+  var grad = document.getElementById('auroraFlow');
+  if (grad) {
+    var stops = grad.querySelectorAll('stop');
+    if (stops.length >= 3) {
+      stops[0].setAttribute('stop-color', p.c1);
+      stops[1].setAttribute('stop-color', p.c2);
+      stops[2].setAttribute('stop-color', p.c4);
+    }
+  }
+  // 同步 UI 元素颜色（Start 按钮 · Daily Flow Logo · 强度滑块）
+  _syncAuroraUI(p.c1);
+}
+/* 根据极光主色统一 UI 色调 */
+function _syncAuroraUI(hex) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  function dk(pct) { return 'rgb('+Math.round(r*pct)+','+Math.round(g*pct)+','+Math.round(b*pct)+')'; }
+  function al(alpha) { return 'rgba('+r+','+g+','+b+','+alpha+')'; }
+  var doc = document.documentElement;
+  doc.style.setProperty('--accent', hex);
+  doc.style.setProperty('--accent-glow', al(0.35));
+  doc.style.setProperty('--btn-green-bg', 'linear-gradient(180deg,'+dk(0.27)+' 0%,'+dk(0.25)+' 100%)');
+  doc.style.setProperty('--btn-green-hover', 'linear-gradient(180deg,'+dk(0.32)+' 0%,'+dk(0.29)+' 100%)');
+  doc.style.setProperty('--btn-green-active', 'linear-gradient(180deg,'+dk(0.23)+' 0%,'+dk(0.21)+' 100%)');
+  doc.style.setProperty('--btn-green-text', al(0.75));
+  doc.style.setProperty('--btn-green-text-hover', hex);
+  doc.style.setProperty('--btn-green-pause', 'linear-gradient(180deg,'+dk(0.12)+' 0%,'+dk(0.11)+' 100%)');
+  doc.style.setProperty('--btn-green-pause-hover', 'linear-gradient(180deg,'+dk(0.15)+' 0%,'+dk(0.13)+' 100%)');
+  // 极光模式热力图配色（基底用 :root 默认暗色，不随极光）
+  doc.style.setProperty('--hm-1', 'rgb('+Math.round(r*0.2)+','+Math.round(g*0.2)+','+Math.round(b*0.2)+')');
+  doc.style.setProperty('--hm-2', 'rgb('+Math.round(r*0.4)+','+Math.round(g*0.4)+','+Math.round(b*0.4)+')');
+  doc.style.setProperty('--hm-3', 'rgb('+Math.round(r*0.6)+','+Math.round(g*0.6)+','+Math.round(b*0.6)+')');
+  doc.style.setProperty('--hm-4', hex);
+}
+/* 离开 aurora 模式时清除内联覆盖，恢复 CSS 变量默认值 */
+function _resetAuroraUI() {
+  var doc = document.documentElement;
+  ['--accent','--accent-glow','--btn-green-bg','--btn-green-hover','--btn-green-active',
+   '--btn-green-text','--btn-green-text-hover','--btn-green-pause','--btn-green-pause-hover',
+   '--hm-0','--hm-1','--hm-2','--hm-3','--hm-4'
+  ].forEach(function(v) { doc.style.removeProperty(v); });
+}
+
+// 动画循环 — 双重驱动：
+//   turbulence: 30fps（SVG 滤镜子采样）
+//   漂移: 60fps（GPU CSS 变换，每帧更新）
+let _auroraFC = 0;
+function _animateAurora() {
+  _auroraFC++;
+  if (!_auroraPaused) _driftFrame += (0.3 * _auroraSpeed);
+  var t = _driftFrame * _rad;
+  // ── turbulence（每 2 帧，角度复用 drift） ──
+  if (!_auroraPaused && (_auroraFC & 1) === 0) {
+    var bfx = 0.0035 + 0.003 * Math.cos(t);
+    var bfy = 0.0035 + 0.003 * Math.sin(t * 0.6);
+    _turbulence.setAttributeNS(null, 'baseFrequency', bfx + ' ' + bfy);
+  }
+  // ── 平滑漂移（每帧 60fps） ──
+  _auroraBands.forEach(function(b, i) {
+    var phase = i * 1.3;
+    var dx = 6 * Math.sin(t * 0.25 + phase) * _auroraSpeed;
+    var dy = 4 * Math.cos(t * 0.2 + phase * 0.7) * _auroraSpeed;
+    b.style.transform = _bandBaseXform[i] + ' translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
+  });
+  requestAnimationFrame(_animateAurora);
+}
+requestAnimationFrame(_animateAurora);
+
 /* ===== Ambient Glow System (Classic Dark) ===== */
 let mistTweens = [];
 function ensureAmbientGlow() {
   const s = document.documentElement.getAttribute('data-style');
   const t = document.documentElement.getAttribute('data-theme');
-  if (s === 'cozy' || t === 'light') return;
+  if (s === 'cozy' || s === 'aurora' || t === 'light') return;
   if (document.querySelector('.ambient-glow')) return;
   const c = document.createElement('div');
   c.className = 'ambient-glow';
@@ -2468,7 +2734,6 @@ function updateMistSpeed(v) {
   const con = document.querySelector('.ambient-glow');
   if (!con || !window.gsap) return;
   con.querySelectorAll('.ambient-glow-layer').forEach(function(l) {
-    // Position drift — continuous random movement
     mistTweens.push(gsap.to(l, {
       x: function() { return (Math.random() - 0.5) * 90 + '%'; },
       y: function() { return (Math.random() - 0.5) * 90 + '%'; },
@@ -2477,7 +2742,6 @@ function updateMistSpeed(v) {
       duration: function() { return (8 + Math.random() * 16) / f; },
       ease: 'sine.inOut', repeat: -1, repeatRefresh: true
     }));
-    // Opacity breathing — fade in & out like clouds forming/dissipating
     mistTweens.push(gsap.fromTo(l,
       { opacity: function() { return 0.12 + Math.random() * 0.18; } },
       { opacity: function() { return 0.55 + Math.random() * 0.3; },
@@ -2618,7 +2882,14 @@ function setTheme(t) {
   document.getElementById('themeIconSun').style.display = t === 'dark' ? 'inline-flex' : 'none';
   document.getElementById('themeIconMoon').style.display = t === 'light' ? 'inline-flex' : 'none';
   try { localStorage.setItem('dft_theme', t); } catch {}
-  if (t === 'dark') ensureAmbientGlow();
+  // 极光：仅 aurora 模式 + dark 主题时显示
+  const style = document.documentElement.getAttribute('data-style') || 'classic';
+  const aurora = document.querySelector('.aurora-container');
+  if (aurora) aurora.style.display = (style === 'aurora' && t === 'dark') ? '' : 'none';
+  // 离开 aurora 模式时清除 UI 色调 & 热力图覆盖
+  if (!(style === 'aurora' && t === 'dark')) _resetAuroraUI();
+  // Classic 模式 + dark 主题 → 启动环境光晕
+  if (t === 'dark' && style === 'classic') ensureAmbientGlow();
   renderTasks();
 }
 function toggleTheme() {
@@ -2630,17 +2901,41 @@ function getStylePref() {
   try { return localStorage.getItem('dft_style') || 'classic'; } catch { return 'classic'; }
 }
 function setStyle(style) {
-  style = style === 'cozy' ? 'cozy' : 'classic';
+  if (style === 'cozy') style = 'cozy';
+  else if (style === 'aurora') style = 'aurora';
+  else style = 'classic';
   document.documentElement.setAttribute('data-style', style);
   const label = document.getElementById('styleToggleLabel');
-  if (label) label.textContent = style === 'cozy' ? 'Cozy' : 'Classic';
+  if (label) label.textContent = style === 'cozy' ? 'Cozy' : style === 'aurora' ? 'Aurora' : 'Classic';
   try { localStorage.setItem('dft_style', style); } catch {}
-  if (style === 'classic') ensureAmbientGlow();
+  // 极光：仅 aurora 模式 + dark 主题时显示
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const aurora = document.querySelector('.aurora-container');
+  if (aurora) aurora.style.display = (style === 'aurora' && theme === 'dark') ? '' : 'none';
+  // 进入/离开 aurora 时同步 UI 色调
+  if (style === 'aurora' && theme === 'dark') {
+    var activeDot = document.querySelector('#auroraTopbar .at-dot.active');
+    if (activeDot) {
+      var p = _auroraPresets[activeDot.dataset.preset];
+      if (p) applyAuroraPreset(p);
+    }
+  } else {
+    _resetAuroraUI();
+  }
+  // Classic + dark → 启动环境光晕，同步 mist slider 速度
+  if (style === 'classic' && theme === 'dark') {
+    ensureAmbientGlow();
+    var ms = document.getElementById('mistSlider');
+    if (ms && window.gsap && document.querySelector('.ambient-glow')) {
+      updateMistSpeed(parseInt(ms.value));
+    }
+  }
   renderTasks();
 }
 function toggleStyle() {
   const cur = document.documentElement.getAttribute('data-style') || 'classic';
-  setStyle(cur === 'classic' ? 'cozy' : 'classic');
+  const next = cur === 'classic' ? 'cozy' : cur === 'cozy' ? 'aurora' : 'classic';
+  setStyle(next);
   syncAllToFile();
 }
 
@@ -2939,7 +3234,7 @@ function delTask(id) {
 function savePendingTextEdit() {
   if (!activeEditTextId) return;
   const inp=document.querySelector(`.task-text-edit[data-id="${activeEditTextId}"]`);
-  if(inp){const t=tasks.find(x=>x.id===activeEditTextId);if(t&&t.text!==inp.value){t.text=inp.value;saveTasks();}}
+  if(inp){const t=tasks.find(x=>x.id===activeEditTextId);if(t&&t.text!==inp.value){const prev=t.text;t.text=inp.value;if(!saveTasks()){t.text=prev;toast('⚠ Save failed');}}}
   activeEditTextId=null;
 }
 function renderTasks() {
@@ -3243,6 +3538,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('btnMin').addEventListener('click', () => window.electronAPI.winMin());
     document.getElementById('btnMax').addEventListener('click', () => window.electronAPI.winMax());
     document.getElementById('btnClose').addEventListener('click', () => window.electronAPI.winClose());
+    // Double-click titlebar → toggle maximize (macOS convention)
+    document.getElementById('titlebar').addEventListener('dblclick', () => {
+      window.electronAPI.winMax();
+    });
     window.electronAPI.onWinState?.(state => {
       const btn=document.getElementById('btnMax');
       btn.setAttribute('aria-label', state==='maximized' ? t('ariaRestore') : t('ariaMaximize'));
@@ -3288,11 +3587,16 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 
-  // Mist speed slider
+  // Mist speed slider → 控制极光流速 / 经典光晕漂移速度
   var ms = document.getElementById('mistSlider');
   if (ms) ms.addEventListener('input', function() {
-    var con = document.querySelector('.ambient-glow');
-    if (con && window.gsap) updateMistSpeed(parseInt(ms.value));
+    var style = document.documentElement.getAttribute('data-style') || 'classic';
+    if (style === 'aurora') {
+      _auroraSpeed = parseFloat(ms.value) / 5;
+    } else {
+      var con = document.querySelector('.ambient-glow');
+      if (con && window.gsap) updateMistSpeed(parseInt(ms.value));
+    }
   });
 
   // Custom category select
@@ -3342,60 +3646,56 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // HTTP bridge — trigger manual sync from Claude
   if (window.electronAPI?.onTriggerSync) {
-    window.electronAPI.onTriggerSync(() => mergeFromFile());
+    window.electronAPI.onTriggerSync(() => { _doSync(); mergeFromFile(); });
   }
 
   // HTTP bridge — receive tasks from Claude in real time
   if (window.electronAPI?.onExternalAddTask) {
     window.electronAPI.onExternalAddTask((data) => {
-      const targetDate = data.date || activeDay;
-      const wasOnDate = activeDay === targetDate;
-      // Switch to the target date if needed
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      addTask(data.text, data.cat || 'Work');
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + data.text);
+      try {
+        savePendingTextEdit();
+        if (!data || typeof data.text !== 'string' || !data.text.trim()) { console.error('Bridge add: invalid data'); return; }
+        const targetDate = data.date || activeDay;
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        addTask(data.text, data.cat || 'Work');
+        updateDateNav();
+        toast(t('fromAlfred') + data.text);
+      } catch(e) { console.error('Bridge add error:', e); }
     });
   }
 
   // HTTP bridge — update task from Claude (PATCH)
   if (window.electronAPI?.onExternalPatchTask) {
     window.electronAPI.onExternalPatchTask((data) => {
-      const targetDate = data.date || activeDay;
-      const wasOnDate = activeDay === targetDate;
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      const task = tasks.find(t => t.id === data.id);
-      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-      if (data.text !== undefined) task.text = data.text;
-      if (data.cat !== undefined) task.cat = data.cat;
-      if (data.done !== undefined) task.done = data.done;
-      saveTasks();
-      renderTasks();
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + t('toastUpdated'));
+      try {
+        savePendingTextEdit();
+        if (!data || !data.id) { console.error('Bridge patch: invalid data'); return; }
+        const targetDate = data.date || activeDay;
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        const task = tasks.find(t => t.id === data.id);
+        if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+        if (data.text !== undefined) task.text = data.text;
+        if (data.cat !== undefined) task.cat = data.cat;
+        if (data.done !== undefined) task.done = data.done;
+        saveTasks(); renderTasks(); updateDateNav();
+        toast(t('fromAlfred') + t('toastUpdated'));
+      } catch(e) { console.error('Bridge patch error:', e); }
     });
   }
 
   // HTTP bridge — delete task from Claude (DELETE)
   if (window.electronAPI?.onExternalDeleteTask) {
     window.electronAPI.onExternalDeleteTask((data) => {
-      const targetDate = data.date || activeDay;
-      const wasOnDate = activeDay === targetDate;
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      const task = tasks.find(t => t.id === data.id);
-      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-      delTask(data.id);
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + t('toastDeleted'));
+      try {
+        savePendingTextEdit();
+        if (!data || !data.id) { console.error('Bridge delete: invalid data'); return; }
+        const targetDate = data.date || activeDay;
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        const task = tasks.find(t => t.id === data.id);
+        if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
+        delTask(data.id); updateDateNav();
+        toast(t('fromAlfred') + t('toastDeleted'));
+      } catch(e) { console.error('Bridge delete error:', e); }
     });
   }
 
@@ -3420,5 +3720,59 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.documentElement.classList.add('theme-ready');
 });
 </script>
+
+<!-- ===== Aurora 顶栏控制绑定 ===== -->
+<script>
+document.getElementById('atSpeed').addEventListener('input', function() {
+  _auroraSpeed = parseFloat(this.value);
+});
+// 强度滑块: rAF 节流，避免 layout thrashing
+let _intensityVal = 0.7;
+let _intensityRAF = null;
+document.getElementById('atIntensity').addEventListener('input', function() {
+  _intensityVal = parseFloat(this.value);
+  if (!_intensityRAF) {
+    _intensityRAF = requestAnimationFrame(function() {
+      _intensityRAF = null;
+      var v = _intensityVal;
+      _auroraBands.forEach(function(b) {
+        if (!b.classList.contains('band-5')) b.style.opacity = v;
+      });
+      document.querySelector('.band-5').style.opacity = v * 0.4;
+    });
+  }
+});
+document.getElementById('atPause').addEventListener('click', function() {
+  _auroraPaused = !_auroraPaused;
+  this.textContent = _auroraPaused ? '▶' : '⏸';
+  this.title = _auroraPaused ? '继续' : '暂停';
+});
+document.querySelectorAll('#auroraTopbar .at-dot').forEach(function(dot) {
+  dot.addEventListener('click', function() {
+    document.querySelectorAll('#auroraTopbar .at-dot').forEach(function(d) { d.classList.remove('active'); });
+    this.classList.add('active');
+    var p = _auroraPresets[this.dataset.preset];
+    if (p) applyAuroraPreset(p);
+  });
+});
+// 按当前 style 控制极光可见性 + 入场
+var _initStyle = document.documentElement.getAttribute('data-style') || 'classic';
+var _initTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+if (_initStyle === 'aurora' && _initTheme === 'dark') {
+  document.querySelector('.aurora-container').style.display = '';
+  var _initOpacity = parseFloat(document.getElementById('atIntensity').value);
+  _auroraBands.forEach(function(b, i) {
+    b.style.opacity = '0';
+    setTimeout(function() {
+      if (!b.classList.contains('band-5')) b.style.opacity = _initOpacity;
+      else b.style.opacity = _initOpacity * 0.4;
+    }, 100 + i * 200);
+  });
+} else {
+  document.querySelector('.aurora-container').style.display = 'none';
+}
+console.log('🌌 DFT × Aurora (顶栏集成)');
+</script>
+
 </body>
 </html>

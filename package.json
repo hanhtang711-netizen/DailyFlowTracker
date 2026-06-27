@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win portable"
+    "build:win": "electron-builder --win portable",
+    "build:mac": "electron-builder --mac"
   },
   "build": {
     "appId": "com.dailyflow.tracker",
@@ -14,9 +15,25 @@
       "main.js",
       "preload.js",
       "index.html",
-      "icon.ico"
+      "icon.ico",
+      "icon.png",
+      "icon.icns",
+      "icon-tray.png"
     ],
     "icon": "icon.ico",
+    "mac": {
+      "icon": "icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "DailyFlowTracker-${version}-mac.${ext}"
+    },
     "win": {
       "target": [
         {
