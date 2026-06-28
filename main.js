@@ -7,6 +7,66 @@ const http = require("http");
 const DATA_FILE = path.join(app.getPath("userData"), "dft-data.json");
 const BRIDGE_PORT = 25713;
 
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function broadcast(channel, data) {
+  BrowserWindow.getAllWindows().forEach(w => { try { w.webContents.send(channel, data); } catch {} });
+}
+
+function readData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+  } catch (e) { console.error("readData:", e.message); }
+  return { updatedAt: new Date().toISOString(), settings: { focus: 25, short: 5, long: 15 }, theme: "dark", style: "classic", days: {} };
+}
+
+// Serialized write queue (prevents concurrent read-modify-write races)
+let _q = [], _busy = false;
+function enqueue(fn) {
+  return new Promise(resolve => {
+    _q.push({ fn, resolve });
+    drain();
+  });
+}
+function drain() {
+  if (_busy || _q.length === 0) return;
+  _busy = true;
+  const job = _q.shift();
+  try { job.resolve(job.fn()); } catch (e) { job.resolve(null); }
+  _busy = false;
+  drain();
+}
+function safeWrite(data) {
+  try {
+    const tmp = DATA_FILE + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
+    fs.renameSync(tmp, DATA_FILE);
+    try {
+      const bd = path.join(path.dirname(DATA_FILE), "backups");
+      if (!fs.existsSync(bd)) fs.mkdirSync(bd, { recursive: true });
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      fs.copyFileSync(DATA_FILE, path.join(bd, `dft-data_backup_${ts}.json`));
+      const files = fs.readdirSync(bd).filter(f => f.startsWith("dft-data_backup_"));
+      if (files.length > 50) files.sort().slice(0, files.length - 50).forEach(f => { try { fs.unlinkSync(path.join(bd, f)); } catch {} });
+    } catch {}
+    return true;
+  } catch (e) { console.error("writeData:", e.message); return false; }
+}
+// Atomic transaction: read → modify → write (queued)
+function atomicModify(modifier) {
+  return enqueue(() => {
+    const data = readData();
+    const result = modifier(data);
+    data.updatedAt = new Date().toISOString();
+    safeWrite(data);
+    return result;
+  });
+}
+
+
 // Allow audio without user gesture (Web Audio API in renderer)
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 
@@ -109,7 +169,7 @@ app.whenReady().then(() => {
   // Ensure data file exists on startup
   try {
     if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ updatedAt: new Date().toISOString(), days: {} }, null, 2), "utf-8");
+      fs.writeFileSync(DATA_FILE, JSON.stringify({ updatedAt: new Date().toISOString(), settings: { focus: 25, short: 5, long: 15 }, theme: 'dark', style: 'classic', days: {} }, null, 2), "utf-8");
     }
   } catch (e) {
     console.error("Failed to init data file:", e.message);
@@ -127,20 +187,35 @@ app.whenReady().then(() => {
       if (req.method === "POST" && req.url === "/add-task") {
         let body = "";
         req.on("data", c => body += c);
-        req.on("end", () => {
-          try {
-            const data = JSON.parse(body);
-            BrowserWindow.getAllWindows().forEach(win => {
-              win.webContents.send("external-add-task", data);
-            });
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: true }));
-          } catch (e) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: e.message }));
+        req.on("end", async () => {
+          let b = {};
+          try { b = JSON.parse(body); } catch {}
+          const taskText = (b.text || "").trim();
+          if (!taskText) {
+            res.writeHead(400); res.end(JSON.stringify({ ok: false, error: "text is required" })); return;
           }
-        });
-        return;
+          const result = await atomicModify(data => {
+            const dateKey = b.date || todayKey();
+            if (!data.days) data.days = {};
+            if (!data.days[dateKey]) data.days[dateKey] = { tasks: [] };
+            if (!data.days[dateKey].tasks) data.days[dateKey].tasks = [];
+            const task = {
+              id: Date.now().toString(36) + Math.random().toString(36).substring(2, 8),
+              text: taskText,
+              cat: b.cat || "Other",
+              done: false,
+              note: b.note || ""
+            };
+            data.days[dateKey].tasks.push(task);
+            return { task, dateKey };
+          });
+          if (result) {
+            broadcast("external-add-task", { ...result.task, date: result.dateKey });
+            broadcast("trigger-sync", {});
+          }
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify(result ? { ok: true, id: result.task.id, date: result.dateKey } : { ok: false, error: "write failed" }));
+        }); return;
       }
 
       if (req.method === "GET" && req.url === "/ping") {
@@ -156,7 +231,7 @@ app.whenReady().then(() => {
           const raw = fs.readFileSync(DATA_FILE, "utf-8");
           const data = JSON.parse(raw);
           const days = data.days || {};
-          const targetKey = dateParam || (() => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; })();
+          const targetKey = dateParam || todayKey();
           const day = days[targetKey] || { tasks: [], stats: { pomodoros: 0, focusSec: 0 } };
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ ok: true, date: targetKey, tasks: day.tasks, stats: day.stats }));
@@ -174,7 +249,7 @@ app.whenReady().then(() => {
           const raw = fs.readFileSync(DATA_FILE, "utf-8");
           const data = JSON.parse(raw);
           const days = data.days || {};
-          const targetKey = dateParam || (() => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; })();
+          const targetKey = dateParam || todayKey();
           const day = days[targetKey] || { tasks: [], stats: { pomodoros: 0, focusSec: 0 } };
           const tasks = day.tasks || [];
           const done = tasks.filter(t => t.done);
@@ -198,42 +273,53 @@ app.whenReady().then(() => {
       if (req.method === "PATCH" && req.url === "/tasks") {
         let body = "";
         req.on("data", c => body += c);
-        req.on("end", () => {
-          try {
-            const data = JSON.parse(body);
-            BrowserWindow.getAllWindows().forEach(win => {
-              win.webContents.send("external-patch-task", data);
-            });
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: true }));
-          } catch (e) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: e.message }));
-          }
-        });
-        return;
+        req.on("end", async () => {
+          let b = {};
+          try { b = JSON.parse(body); } catch {}
+          if (!b.id) { res.writeHead(400); res.end(JSON.stringify({ ok: false, error: "id is required" })); return; }
+          let updated = false;
+          await atomicModify(data => {
+            const dateKey = b.date || todayKey();
+            if (!data.days) data.days = {};
+            if (data.days[dateKey] && data.days[dateKey].tasks) {
+              const task = data.days[dateKey].tasks.find(t => t.id === b.id);
+              if (task) {
+                if (b.text !== undefined) task.text = b.text;
+                if (b.cat !== undefined) task.cat = b.cat;
+                if (b.done !== undefined) task.done = Boolean(b.done);
+                updated = true;
+              }
+            }
+            return null;
+          });
+          broadcast("external-patch-task", b);
+          broadcast("trigger-sync", {});
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ ok: true, updated }));
+        }); return;
       }
 
       if (req.method === "DELETE" && req.url.startsWith("/tasks")) {
-        try {
-          const urlObj = new URL(req.url, `http://127.0.0.1:${BRIDGE_PORT}`);
-          const date = urlObj.searchParams.get("date") || undefined;
-          const id = urlObj.searchParams.get("id");
-          if (!id) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "Missing 'id' query param" }));
-            return;
-          }
-          BrowserWindow.getAllWindows().forEach(win => {
-            win.webContents.send("external-delete-task", { date, id });
+        const u = new URL(req.url, `http://127.0.0.1:${BRIDGE_PORT}`);
+        const id = u.searchParams.get("id");
+        const dateKey = u.searchParams.get("date") || todayKey();
+        if (!id) { res.writeHead(400); res.end(JSON.stringify({ ok: false, error: "id is required" })); return; }
+        (async () => {
+          let deleted = false;
+          await atomicModify(data => {
+            if (!data.days) data.days = {};
+            if (data.days[dateKey] && data.days[dateKey].tasks) {
+              const before = data.days[dateKey].tasks.length;
+              data.days[dateKey].tasks = data.days[dateKey].tasks.filter(t => t.id !== id);
+              deleted = data.days[dateKey].tasks.length < before;
+            }
+            return null;
           });
+          broadcast("external-delete-task", { id, date: dateKey });
+          broadcast("trigger-sync", {});
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ ok: true }));
-        } catch (e) {
-          res.writeHead(500, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ ok: false, error: e.message }));
-        }
-        return;
+          res.end(JSON.stringify({ ok: true, deleted }));
+        })(); return;
       }
 
       if (req.method === "POST" && req.url === "/sync") {
@@ -320,10 +406,10 @@ ipcMain.handle("read-data-file", async () => {
     if (fs.existsSync(DATA_FILE)) {
       return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
     }
-    return { updatedAt: new Date().toISOString(), days: {} };
+    return { updatedAt: new Date().toISOString(), settings: { focus: 25, short: 5, long: 15 }, theme: 'dark', style: 'classic', days: {} };
   } catch (e) {
     console.error("Failed to read data file (returning empty state):", e.message);
-    return { updatedAt: new Date().toISOString(), days: {} };
+    return { updatedAt: new Date().toISOString(), settings: { focus: 25, short: 5, long: 15 }, theme: 'dark', style: 'classic', days: {} };
   }
 });
 

@@ -2866,14 +2866,14 @@ async function syncAllToFile() {
     try { localStorage.setItem('dft_lastSyncAt', now); } catch {}
   } catch (e) { console.error('Sync to file failed:', e); }
 }
-async function mergeFromFile() {
+async function mergeFromFile(force=false) {
   if (!window.electronAPI?.readDataFile) return;
   try {
     const fileData = await window.electronAPI.readDataFile();
     if (!fileData || !fileData.days) return;
-    // Timestamp guard: skip if file is older than or equal to last sync
+    // Timestamp guard: skip if file is older than last sync (bypassed when force=true)
     const lastSyncAt = (() => { try { return localStorage.getItem('dft_lastSyncAt'); } catch { return null; } })();
-    if (lastSyncAt && fileData.updatedAt && fileData.updatedAt <= lastSyncAt) {
+    if (!force && lastSyncAt && fileData.updatedAt && fileData.updatedAt < lastSyncAt) {
       return; // File is stale; app has more recent changes
     }
     let changed = false;
@@ -3579,9 +3579,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('dateDisplay').textContent=fmtDate(new Date());
   const n=new Date(); cy=n.getFullYear(); cm=n.getMonth(); selDay=null;
   // Merge from data file FIRST to restore across version switches
-  mergeFromFile().then(() => {
+  mergeFromFile(true).then(() => {
     upSetUI(); loadTasks(); renderTasks(); updateDateNav(); upAll(); upT();
-    syncAllToFile();
   });
 
   document.getElementById('timerStartBtn').addEventListener('click',toggleT);
@@ -3662,71 +3661,54 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // HTTP bridge — trigger manual sync from Claude
   if (window.electronAPI?.onTriggerSync) {
-    window.electronAPI.onTriggerSync(() => { _doSync(); mergeFromFile(); });
+    window.electronAPI.onTriggerSync(() => { syncAllToFile(); mergeFromFile(true); });
   }
 
   // HTTP bridge — receive tasks from Claude in real time
   if (window.electronAPI?.onExternalAddTask) {
-    window.electronAPI.onExternalAddTask((data) => {
-      try { savePendingTextEdit(); if (!data || typeof data.text !== 'string' || !data.text.trim()) { console.error('Bridge add: invalid data'); return; }
-      const targetDate = data.date || activeDay;
-      // Switch to the target date if needed
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      addTask(data.text, data.cat || 'Work');
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + data.text);
+    window.electronAPI.onExternalAddTask(async (data) => {
+      try {
+        if (!data || typeof data.text !== 'string' || !data.text.trim()) return;
+        const targetDate = data.date || todayKey();
+        await mergeFromFile(true);
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        renderTasks(); updateDateNav(); upAll();
+        toast(t('fromAlfred') + data.text);
       } catch(e) { console.error('Bridge add error:', e); }
     });
   }
 
   // HTTP bridge — update task from Claude (PATCH)
   if (window.electronAPI?.onExternalPatchTask) {
-    window.electronAPI.onExternalPatchTask((data) => {
-      try { savePendingTextEdit(); if (!data || !data.id) { console.error('Bridge patch: invalid data'); return; }
-      const targetDate = data.date || activeDay;
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      const task = tasks.find(t => t.id === data.id);
-      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-      if (data.text !== undefined) task.text = data.text;
-      if (data.cat !== undefined) task.cat = data.cat;
-      if (data.done !== undefined) task.done = data.done;
-      saveTasks();
-      renderTasks();
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + t('toastUpdated'));
+    window.electronAPI.onExternalPatchTask(async (data) => {
+      try {
+        if (!data || !data.id) return;
+        const targetDate = data.date || todayKey();
+        await mergeFromFile(true);
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        renderTasks(); updateDateNav(); upAll();
       } catch(e) { console.error('Bridge patch error:', e); }
     });
   }
 
   // HTTP bridge — delete task from Claude (DELETE)
   if (window.electronAPI?.onExternalDeleteTask) {
-    window.electronAPI.onExternalDeleteTask((data) => {
-      try { savePendingTextEdit(); if (!data || !data.id) { console.error('Bridge delete: invalid data'); return; }
-      const targetDate = data.date || activeDay;
-      if (targetDate !== activeDay) {
-        viewDate = new Date(targetDate);
-        loadTasks(targetDate);
-      }
-      const task = tasks.find(t => t.id === data.id);
-      if (!task) { toast(t('fromAlfred') + t('toastNotFound')); return; }
-      delTask(data.id);
-      if (targetDate !== activeDay || !wasOnDate) updateDateNav();
-      toast(t('fromAlfred') + t('toastDeleted'));
+    window.electronAPI.onExternalDeleteTask(async (data) => {
+      try {
+        if (!data || !data.id) return;
+        const targetDate = data.date || todayKey();
+        await mergeFromFile(true);
+        if (targetDate !== activeDay) { viewDate = new Date(targetDate); loadTasks(targetDate); }
+        renderTasks(); updateDateNav(); upAll();
       } catch(e) { console.error('Bridge delete error:', e); }
     });
   }
 
   // Fallback: poll data file every 60s (in case app was closed and reopened)
-  setInterval(() => mergeFromFile(), 60000);
+  setInterval(() => mergeFromFile(), 1000);
 
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&T.state==='running') tick();});
-  setInterval(refreshDayIfNeeded,60000);
+  setInterval(refreshDayIfNeeded,1000);
 
   // Auto-start toggle — init from Electron settings
   if (window.electronAPI) {
