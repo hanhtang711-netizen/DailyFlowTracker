@@ -2866,6 +2866,7 @@ async function syncAllToFile() {
     try { localStorage.setItem('dft_lastSyncAt', now); } catch {}
   } catch (e) { console.error('Sync to file failed:', e); }
 }
+let _lastFileUpdatedAt = null;
 async function mergeFromFile(force=false) {
   if (!window.electronAPI?.readDataFile) return;
   try {
@@ -2875,6 +2876,10 @@ async function mergeFromFile(force=false) {
     const lastSyncAt = (() => { try { return localStorage.getItem('dft_lastSyncAt'); } catch { return null; } })();
     if (!force && lastSyncAt && fileData.updatedAt && fileData.updatedAt < lastSyncAt) {
       return; // File is stale; app has more recent changes
+    }
+    // Skip if file hasn't changed since last merge (prevents 1s polling from re-merging identical data)
+    if (!force && _lastFileUpdatedAt && fileData.updatedAt === _lastFileUpdatedAt) {
+      return;
     }
     let changed = false;
     for (const [dk, day] of Object.entries(fileData.days)) {
@@ -2887,9 +2892,10 @@ async function mergeFromFile(force=false) {
     if (changed) {
       loadTasks(activeDay); renderTasks(); updateDateNav(); upAll(); renderHM();
       if (document.getElementById('vcalendar')?.classList.contains('active')) renderCal();
-      toast(t('toastSynced'));
+      if (force) toast(t('toastSynced')); // Only show toast on API-triggered sync, not polling
     }
-    // Update lastSyncAt to file's timestamp so we don't re-merge stale data
+    // Track file timestamp and lastSyncAt to prevent duplicate merges
+    _lastFileUpdatedAt = fileData.updatedAt || null;
     try { localStorage.setItem('dft_lastSyncAt', fileData.updatedAt || new Date().toISOString()); } catch {}
   } catch (e) { console.error('Merge from file failed:', e); }
 }
