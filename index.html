@@ -2842,12 +2842,19 @@ async function syncAllToFile() {
   if (!window.electronAPI?.writeDataFile) return;
   try {
     const now = new Date().toISOString();
+    // Read existing file first — don't lose data main.js wrote via atomicModify
+    // that localStorage hasn't picked up yet (race: syncAllToFile fires before next mergeFromFile poll)
+    let existing = { days: {} };
+    try {
+      const raw = await window.electronAPI.readDataFile();
+      if (raw && raw.days) existing = raw;
+    } catch {}
     const data = {
       updatedAt: now,
       settings: loadSettings(),
       theme: getThemePref(),
       style: getStylePref(),
-      days: {}
+      days: { ...existing.days }  // start from file, overlay localStorage below
     };
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
