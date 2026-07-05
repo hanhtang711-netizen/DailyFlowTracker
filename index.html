@@ -10,11 +10,25 @@ try {
   document.documentElement.setAttribute('data-style', localStorage.getItem('dft_style') || 'classic');
 } catch {}
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <style>
+  /* ============================================================
+     Self-hosted Fonts (bundled, no CDN dependency)
+     ============================================================ */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('fonts/inter.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Noto Sans SC';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('fonts/noto-sans-sc.woff2') format('woff2');
+  }
   /* ============================================================
      Theme Variables — Dark (Spotify) / Light
      ============================================================ */
