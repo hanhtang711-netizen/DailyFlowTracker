@@ -2836,6 +2836,9 @@ function playDoneSound() {
         window._beepAudio = new Audio(uri);
         window._beepAudio.volume = 0.5;
         window._beepAudio.play().catch(function(e){ console.error('beep first-play failed:', e); });
+      } else {
+        // No custom MP3 → fallback to main process beep (osascript)
+        window.electronAPI?.playBeep();
       }
     });
     return;
