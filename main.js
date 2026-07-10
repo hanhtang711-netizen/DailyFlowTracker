@@ -76,6 +76,7 @@ if (!gotLock) { app.quit(); }
 
 let mainWin = null;
 let appIsQuitting = false;
+let tray = null;
 
 function createWindow() {
   const iconExt = process.platform === "darwin" ? "png" : "ico";
@@ -122,7 +123,7 @@ function createTray() {
   } else {
     trayIcon = nativeImage.createFromPath(path.join(__dirname, "icon.ico"));
   }
-  const tray = new Tray(trayIcon);
+  tray = new Tray(trayIcon);
   tray.setToolTip("Daily Flow Tracker");
 
   const toggleWin = () => {
@@ -386,10 +387,16 @@ app.on("activate", () => {
 
 // Save renderer state before quit — send sync trigger to renderer
 app.on("before-quit", () => {
+  appIsQuitting = true; // MARK: allow window close handler to proceed
   // Trigger sync while renderer is still alive; localStorage survives across restarts
   BrowserWindow.getAllWindows().forEach(win => {
     try { win.webContents.send("trigger-sync"); } catch {}
   });
+});
+
+// Clean up tray resource before final exit
+app.on("will-quit", () => {
+  if (tray) { try { tray.destroy(); } catch {} tray = null; }
 });
 
 // Window control IPC
