@@ -2,7 +2,7 @@
 
 > 番茄钟 + 任务管理 + 日历热力图 + 极光模式 | Electron 桌面应用
 >
-> **版本**: v2.8.2 | **平台**: Windows / macOS
+> **版本**: v2.9.0 | **平台**: Windows / macOS
 
 ---
 
@@ -313,6 +313,15 @@ DFT 提供 Obsidian 插件 `dft-bridge`，位于 `.obsidian/plugins/dft-bridge/`
 
 ## 版本历史
 
+### v2.9.0 (2026-07-11)
+- **新增**: macOS 26 Liquid Glass 图标（Default / Dark / Mono-Tinted 资产目录）
+- **改进**: Electron Builder 升级至 26.15.3；分别产出 arm64 / x64 DMG
+- **修复**: macOS 26 不再以运行时 PNG 覆盖 Dock 图标；恢复既有菜单栏 Tray 图标
+- **修复**: 将 Inter 与 Noto Sans SC 纳入生产包，保持番茄钟倒计时字体一致
+
+### v2.8.3 (2026-07-06)
+- **改进**: Inter + Noto Sans SC 字体自托管，消除网络字体依赖
+
 ### v2.8.2 (2026-06-28)
 - **修复**: syncAllToFile 覆盖 atomicModify 写入（合并而非覆写）
 - **修复**: mergeFromFile 增加 `_lastFileUpdatedAt` 去重，轮询不再重复合并
@@ -346,6 +355,21 @@ DFT 提供 Obsidian 插件 `dft-bridge`，位于 `.obsidian/plugins/dft-bridge/`
 ### v1.0.6 (2026-06-01)
 - HTTP Bridge CRUD (PATCH/DELETE/GET /stats) + 自动备份
 
+### v1.0.5 (2026-06-01)
+- GSAP 动效集成（Toast、任务入场与删除动画）
+
+### v1.0.4 (2026-06-01)
+- HTTP Bridge 读取接口与任务分类快捷切换
+
+### v1.0.3 (2026-05-26)
+- 应用图标更换
+
+### v1.0.2 (2026-05-23)
+- 作息时间调整
+
+### v1.0.1 (2026-05-16)
+- 数据写入修复
+
 ### v1.0.0 (2026-05-16)
 - 初始版本：番茄钟 + 任务管理 + 日历热力图
 
@@ -361,7 +385,7 @@ DFT 提供 Obsidian 插件 `dft-bridge`，位于 `.obsidian/plugins/dft-bridge/`
 | 数据存储 | localStorage + JSON 文件 |
 | 外部接口 | HTTP Bridge (Node.js http, 端口 25713) |
 | 构建 | electron-builder |
-| 字体 | Inter + Noto Sans SC (Google Fonts) |
+| 字体 | Inter + Noto Sans SC（本地自托管） |
 | Obsidian 插件 | Obsidian Plugin API (dft-bridge) |
 
 ---

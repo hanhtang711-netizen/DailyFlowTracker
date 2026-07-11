@@ -1,6 +1,59 @@
 # Daily Flow Tracker — 迭代记录
 
 > 产品版本日志，按版本倒序排列。
+>
+> 版本来源：Git tag 与本文件为准；`package.json` 始终与最新发布版本一致。v1.0.x 为 Git 初始化前的历史记录，未补造标签。
+
+---
+
+## v2.9.0 — macOS 26 Liquid Glass 图标 (260711)
+
+### 新增
+- Icon Composer `.icon` 资产接入 Electron Builder，生成 macOS 26 的 `Assets.car`，支持 Default / Dark / Mono（Tinted）渲染。
+- arm64 与 x64 DMG 分别命名，避免多架构产物互相覆盖。
+
+### 修复
+- macOS 26 不再以运行时 PNG 覆盖 Dock 图标。
+- 生产包纳入 Inter 与 Noto Sans SC，恢复番茄钟倒计时既有字体渲染。
+- 菜单栏 Tray 恢复既有 `icon-tray.png`，不受应用图标外观切换影响。
+
+---
+
+## v2.8.3 — 字体自托管 (260706)
+
+- Inter 与 Noto Sans SC 改为随应用打包，消除网络字体依赖。
+
+---
+
+## v2.8.2 — 同步合并修复 (260628)
+
+- `syncAllToFile` 改为合并写入，避免覆盖 `atomicModify` 写队列。
+- 轮询合并去重，并抑制轮询触发的重复 Toast。
+
+---
+
+## v2.8.1 — 轮询 Toast 修复 (260628)
+
+- 跳过重复文件合并，禁止 1 秒轮询触发 Toast。
+
+---
+
+## v2.8.0 — macOS 直写与同步重构 (260628)
+
+- 主进程直接文件 I/O、序列化写入队列与渲染进程启动同步修复。
+- 新增 `/tasks/unfinished`，完善 HTTP Bridge 输入校验。
+
+---
+
+## v1.3.1 — Liquid Glass 毛玻璃与 UI 统一 (260627)
+
+- 统一 macOS 下的 Liquid Glass 毛玻璃视觉与 UI 表现。
+
+---
+
+## v1.3.0 — macOS 迁移与崩溃防护 (260627)
+
+- 完成 macOS 迁移、安全加固、崩溃恢复与提示音链路。
 
 ---
 

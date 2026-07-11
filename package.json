@@ -1,6 +1,6 @@
 {
   "name": "daily-flow-tracker",
-  "version": "1.0.0",
+  "version": "2.9.0",
   "description": "Daily Flow Tracker — 番茄钟 + 任务管理 + 日历热力图",
   "main": "main.js",
   "scripts": {
