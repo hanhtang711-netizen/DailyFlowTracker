@@ -9,20 +9,26 @@
     "build:mac": "electron-builder --mac"
   },
   "build": {
+    "directories": {
+      "buildResources": "build"
+    },
     "appId": "com.dailyflow.tracker",
     "productName": "Daily Flow Tracker",
     "files": [
       "main.js",
       "preload.js",
       "index.html",
+      "fonts/**/*",
       "icon.ico",
       "icon.png",
+      "icon-dark.png",
       "icon.icns",
-      "icon-tray.png"
+      "icon-tray.png",
+      "icon-tray-dark.png"
     ],
     "icon": "icon.ico",
     "mac": {
-      "icon": "icon.icns",
+      "icon": "DFT.icon",
       "target": [
         {
           "target": "dmg",
@@ -32,7 +38,10 @@
           ]
         }
       ],
-      "artifactName": "DailyFlowTracker-${version}-mac.${ext}"
+      "artifactName": "DailyFlowTracker-${version}-mac-${arch}.${ext}"
+    },
+    "dmg": {
+      "icon": "icon.icns"
     },
     "win": {
       "target": [
@@ -43,13 +52,11 @@
           ]
         }
       ],
-      "artifactName": "DailyFlowTracker-${version}.${ext}",
-      "sign": false,
-      "signDlls": false
+      "artifactName": "DailyFlowTracker-${version}.${ext}"
     }
   },
   "devDependencies": {
     "electron": "^35.7.5",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "26.15.3"
   }
 }

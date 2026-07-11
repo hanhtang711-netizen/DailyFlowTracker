@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, Notification, nativeImage } = require("electron");
+const { app, BrowserWindow, ipcMain, Tray, Menu, Notification, nativeImage, systemPreferences } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -78,6 +78,35 @@ let mainWin = null;
 let appIsQuitting = false;
 let tray = null;
 
+// macOS 26 (Darwin 25) renders the bundled Icon Composer asset itself. Do not
+// overwrite it with a flat PNG at runtime, or Tinted/Mono rendering is lost.
+function usesLiquidGlassAppIcon() {
+  return process.platform === "darwin" && Number.parseInt(os.release(), 10) >= 25;
+}
+
+// macOS appearance-aware icon switching — keeps the tray adaptive everywhere;
+// Dock/window PNG switching remains only as a fallback for pre-macOS 26.
+function updateAppIcon() {
+  if (process.platform !== "darwin") return;
+  try {
+    const isDark = systemPreferences.effectiveAppearance === "dark";
+
+    // Dock icon (legacy fallback only; macOS 26 uses Assets.car from DFT.icon)
+    if (app.dock && !usesLiquidGlassAppIcon()) {
+      const dockIcon = path.join(__dirname, isDark ? "icon-dark.png" : "icon.png");
+      app.dock.setIcon(nativeImage.createFromPath(dockIcon));
+    }
+
+    // Window icon
+    if (mainWin && !mainWin.isDestroyed() && !usesLiquidGlassAppIcon()) {
+      const winIcon = path.join(__dirname, isDark ? "icon-dark.png" : "icon.png");
+      mainWin.setIcon(nativeImage.createFromPath(winIcon));
+    }
+  } catch (e) {
+    console.error("updateAppIcon:", e.message);
+  }
+}
+
 function createWindow() {
   const iconExt = process.platform === "darwin" ? "png" : "ico";
   const iconPath = path.join(__dirname, `icon.${iconExt}`);
@@ -91,6 +120,8 @@ function createWindow() {
   });
   mainWin.loadFile("index.html");
   mainWin.once("ready-to-show", () => mainWin.show());
+  // Bootstraps app icons to match macOS appearance (Dock, tray, window)
+  if (process.platform === "darwin") updateAppIcon();
   // Close to tray instead of quitting
   mainWin.on("close", (e) => {
     if (!appIsQuitting) {
@@ -118,7 +149,7 @@ function createWindow() {
 function createTray() {
   let trayIcon;
   if (process.platform === "darwin") {
-    // macOS: 44×44 colored PNG (retina-ready) — cat is too detailed for template mask
+    // Keep the established menu-bar glyph; macOS renders this template asset.
     trayIcon = nativeImage.createFromPath(path.join(__dirname, "icon-tray.png"));
   } else {
     trayIcon = nativeImage.createFromPath(path.join(__dirname, "icon.ico"));
@@ -174,6 +205,15 @@ app.whenReady().then(() => {
     }
   } catch (e) {
     console.error("Failed to init data file:", e.message);
+  }
+
+  // Subscribe to macOS appearance changes → adaptive Dock / Tray / Window icons
+  if (process.platform === "darwin") {
+    try {
+      systemPreferences.subscribe("appleInterfaceStyle", updateAppIcon);
+    } catch (e) {
+      console.error("Failed to subscribe to appearance changes:", e.message);
+    }
   }
 
   // Start HTTP bridge for Claude to send tasks directly
