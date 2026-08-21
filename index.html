@@ -740,12 +740,28 @@ try {
   }
   .ts-controls button:hover { background: var(--bg-hover-strong); color: var(--text-tertiary); }
   .ts-controls .ts-val {
-    width: 30px;
+    width: 42px;
+    height: 24px;
+    box-sizing: border-box;
+    padding: 0 3px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    outline: none;
+    background: transparent;
+    color: var(--text-secondary);
     text-align: center;
     font-size: 14px;
     font-weight: 700;
-    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
+    appearance: textfield;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .ts-controls .ts-val::-webkit-inner-spin-button,
+  .ts-controls .ts-val::-webkit-outer-spin-button { appearance: none; margin: 0; }
+  .ts-controls .ts-val:hover { background: var(--bg-elevated); }
+  .ts-controls .ts-val:focus {
+    border-color: var(--accent);
+    background: var(--bg-elevated);
   }
 
   /* Timer ring — hero */
@@ -894,93 +910,78 @@ try {
     z-index: 1;
     width: 100%;
   }
-  .btn-solid {
+  /* Timer controls — quiet depth */
+  .timer-controls .btn-solid,
+  .timer-controls .btn-ghost {
     flex: 1;
+    min-height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 11px 18px;
-    border: none;
+    padding: 8px 14px;
+    border: 1px solid var(--border-light);
     border-radius: var(--button-radius);
-    background: var(--btn-green-bg);
-    color: var(--btn-green-text);
-    font-size: 12.5px;
-    font-weight: 600;
-    font-family: inherit;
+    font: 600 12.5px/1 inherit;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-    box-shadow:
-      0 2px 6px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.04);
     outline: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      0 3px 8px rgba(0,0,0,0.18);
+    transition: transform 0.2s var(--ease-cinematic), background 0.2s var(--ease-cinematic), color 0.2s var(--ease-cinematic), border-color 0.2s var(--ease-cinematic), box-shadow 0.2s var(--ease-cinematic);
   }
-  .btn-solid:hover {
+  .timer-controls .btn-solid {
+    background: var(--btn-green-bg);
+    border-color: var(--accent-dim);
+    color: var(--btn-green-text);
+  }
+  .timer-controls .btn-solid:hover {
     background: var(--btn-green-hover);
     color: var(--btn-green-text-hover);
     transform: translateY(-1px);
     box-shadow:
-      0 4px 14px rgba(30,215,96,0.10),
-      0 2px 6px rgba(0,0,0,0.3),
-      inset 0 1px 0 rgba(255,255,255,0.05);
+      inset 0 1px 0 rgba(255,255,255,0.09),
+      0 5px 14px rgba(0,0,0,0.22);
   }
-  .btn-solid:active {
+  .timer-controls .btn-solid:active {
     transform: translateY(0);
     transition-duration: 0.1s;
     background: var(--btn-green-active);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.14);
   }
-  /* Pause state */
-  .btn-solid.is-running {
+  /* Pause remains a neutral primary action without changing the button language. */
+  .timer-controls .btn-solid.is-running {
     background: var(--btn-green-pause);
-    color: var(--text-dim);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
-  .btn-solid.is-running:hover {
-    background: var(--btn-green-pause-hover);
+    border-color: var(--border-light);
     color: var(--text-tertiary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    transform: translateY(-1px);
+  }
+  .timer-controls .btn-solid.is-running:hover {
+    background: var(--btn-green-pause-hover);
+    color: var(--text-secondary);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.09),
+      0 5px 14px rgba(0,0,0,0.22);
   }
 
-  .btn-ghost {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 11px 18px;
-    border: 1px solid var(--border-light);
-    border-radius: var(--button-radius);
-    background: hsla(0,0%,100%,0.012);
-    color: var(--text-faint);
-    font-size: 12.5px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-    outline: none;
+  .timer-controls .btn-ghost {
+    background: var(--bg-hover);
+    color: var(--text-tertiary);
   }
-  .btn-ghost:hover {
-    border-color: hsla(0,0%,100%,0.05);
-    background: hsla(0,0%,100%,0.025);
-    color: var(--text-dim);
+  .timer-controls .btn-ghost:hover {
+    background: var(--bg-hover-strong);
+    border-color: var(--border-medium);
+    color: var(--text-secondary);
     transform: translateY(-1px);
-    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.09),
+      0 5px 14px rgba(0,0,0,0.22);
   }
-  .btn-ghost:active {
+  .timer-controls .btn-ghost:active {
     transform: translateY(0);
     transition-duration: 0.1s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.14);
   }
-  [data-theme="light"][data-style="classic"] .btn-ghost {
-    background: hsla(0,0%,0%,0.02);
-    color: var(--text-dim);
-  }
-  [data-theme="light"][data-style="classic"] .btn-ghost:hover {
-    background: hsla(0,0%,0%,0.04);
-    color: var(--text-tertiary);
-    border-color: hsla(0,0%,0%,0.1);
-  }
+
 
   /* Stats */
   .timer-stats {
@@ -2049,6 +2050,20 @@ try {
        0 20px 56px -16px rgba(0,0,0,0.22),
        2px 12px 20px -14px rgba(0,0,0,0.15) !important;
   }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-settings {
+    background: rgba(18, 18, 18, 0.10) !important;
+    backdrop-filter: blur(14px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+    border-color: rgba(255, 255, 255, 0.045) !important;
+  }
+
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-settings .ts-controls button {
+    background: rgba(255, 255, 255, 0.025) !important;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-settings .ts-controls button:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .panel::after {
     content: '';
     position: absolute;
@@ -2148,6 +2163,80 @@ try {
   [data-style="aurora"] .btn-solid:active {
     background: var(--btn-green-active) !important;
   }
+  /* Start stays neutral; accent is carried by icon, text, and border only. */
+  [data-theme="dark"][data-style="classic"] .timer-controls .btn-solid {
+    background: rgba(255, 255, 255, 0.028) !important;
+    border-color: rgba(30, 215, 96, 0.16) !important;
+  }
+  [data-theme="dark"][data-style="classic"] .timer-controls .btn-solid:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(30, 215, 96, 0.28) !important;
+  }
+  [data-theme="light"][data-style="classic"] .timer-controls .btn-solid {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(29, 185, 84, 0.20) !important;
+    color: #2e7d32 !important;
+  }
+  [data-theme="light"][data-style="classic"] .timer-controls .btn-solid:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(29, 185, 84, 0.30) !important;
+    color: #1b5e20 !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .timer-controls .btn-solid {
+    background: rgba(255, 255, 255, 0.028) !important;
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent) !important;
+    color: color-mix(in srgb, var(--accent) 72%, white) !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .timer-controls .btn-solid:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: color-mix(in srgb, var(--accent) 42%, transparent) !important;
+    color: white !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .timer-controls .btn-solid:active {
+    background: rgba(255, 255, 255, 0.015) !important;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-controls .btn-ghost {
+    background: rgba(255, 255, 255, 0.028) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .timer-controls .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
+  }
+  [data-style="cozy"] .timer-controls .btn-solid {
+    background: rgba(255, 252, 247, 0.32) !important;
+    border-color: rgba(203, 139, 71, 0.20) !important;
+    color: #a56d31 !important;
+  }
+  [data-style="cozy"] .timer-controls .btn-solid:hover {
+    background: rgba(255, 252, 247, 0.52) !important;
+    border-color: rgba(203, 139, 71, 0.32) !important;
+    color: #80501f !important;
+  }
+  [data-style="cozy"] .timer-controls .btn-ghost {
+    background: rgba(255, 252, 247, 0.32);
+    border-color: rgba(146, 103, 63, 0.12);
+    color: var(--text-tertiary);
+  }
+  [data-style="cozy"] .timer-controls .btn-ghost:hover {
+    background: rgba(255, 252, 247, 0.52);
+    border-color: rgba(146, 103, 63, 0.20);
+    color: var(--text-secondary);
+  }
+  [data-style="cozy"] .timer-controls .btn-solid,
+  [data-style="cozy"] .timer-controls .btn-ghost {
+    box-shadow:
+      var(--soft-outline),
+      inset 0 1px 0 rgba(255,255,255,0.34),
+      0 3px 9px rgba(121,86,55,0.10);
+  }
+  [data-style="cozy"] .timer-controls .btn-solid:hover,
+  [data-style="cozy"] .timer-controls .btn-ghost:hover {
+    box-shadow:
+      var(--soft-outline),
+      inset 0 1px 0 rgba(255,255,255,0.42),
+      0 5px 14px rgba(121,86,55,0.13);
+  }
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) .btn-ghost {
     background: rgba(255, 255, 255, 0.02) !important;
   }
@@ -2170,6 +2259,17 @@ try {
   }
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) input:focus,
   [data-theme="dark"]:is([data-style="classic"],[data-style="aurora"]) select:focus {
+    border-color: rgba(30, 215, 96, 0.25) !important;
+    box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.08) !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .ts-controls .ts-val {
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .ts-controls .ts-val:hover {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  [data-theme="dark"][data-style="aurora"] .ts-controls .ts-val:focus {
     border-color: rgba(30, 215, 96, 0.25) !important;
     box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.08) !important;
   }
@@ -2398,7 +2498,7 @@ try {
           <label>专注</label>
           <div class="ts-controls">
             <button data-target="focus" data-dir="-1">−</button>
-            <span class="ts-val" id="sv-focus">25</span>
+            <input class="ts-val" id="sv-focus" type="number" min="1" max="120" step="1" value="25" inputmode="numeric" aria-label="专注时长（分钟）">
             <button data-target="focus" data-dir="1">+</button>
           </div>
         </div>
@@ -2406,7 +2506,7 @@ try {
           <label>短休</label>
           <div class="ts-controls">
             <button data-target="short" data-dir="-1">−</button>
-            <span class="ts-val" id="sv-short">5</span>
+            <input class="ts-val" id="sv-short" type="number" min="1" max="30" step="1" value="5" inputmode="numeric" aria-label="短休时长（分钟）">
             <button data-target="short" data-dir="1">+</button>
           </div>
         </div>
@@ -2414,7 +2514,7 @@ try {
           <label>长休</label>
           <div class="ts-controls">
             <button data-target="long" data-dir="-1">−</button>
-            <span class="ts-val" id="sv-long">15</span>
+            <input class="ts-val" id="sv-long" type="number" min="1" max="60" step="1" value="15" inputmode="numeric" aria-label="长休时长（分钟）">
             <button data-target="long" data-dir="1">+</button>
           </div>
         </div>
@@ -3188,10 +3288,22 @@ function toggleT() { T.state==='running'?pauseT():startT(); }
 function resetT() { clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='idle'; T.timeLeft=dur(T.mode); upT(); }
 function switchMode(m) { clearInterval(T.interval); T.interval=null; T.endsAt=0; T.state='idle'; T.mode=m; T.timeLeft=dur(m); upT(); }
 
+const SET_META={
+  focus:{min:1,max:120,step:5,mode:'FOCUS'},
+  short:{min:1,max:30,step:1,mode:'SHORT_BREAK'},
+  long:{min:1,max:60,step:5,mode:'LONG_BREAK'}
+};
+function setDuration(target, value) {
+  const meta=SET_META[target];
+  const parsed=Number(value);
+  const next=Number.isFinite(parsed) ? Math.max(meta.min,Math.min(meta.max,Math.round(parsed))) : SET[target];
+  SET[target]=next; saveSettings(SET); upSetUI(); syncAllToFile();
+  if(T.mode===meta.mode&&T.state==='idle'){T.timeLeft=dur(T.mode);upT();}
+}
 function upSetUI() {
-  document.getElementById('sv-focus').textContent=SET.focus;
-  document.getElementById('sv-short').textContent=SET.short;
-  document.getElementById('sv-long').textContent=SET.long;
+  document.getElementById('sv-focus').value=SET.focus;
+  document.getElementById('sv-short').value=SET.short;
+  document.getElementById('sv-long').value=SET.long;
 }
 
 // Tasks
@@ -3572,12 +3684,12 @@ document.getElementById('gearBtn').addEventListener('click', function(){
 document.querySelectorAll('.timer-settings .ts-controls button').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const t=btn.dataset.target, d=parseInt(btn.dataset.dir);
-    const steps={focus:5,short:1,long:5}, mins={focus:[1,120],short:[1,30],long:[1,60]};
-    let v=SET[t]+d*steps[t]; v=Math.max(mins[t][0],Math.min(mins[t][1],v));
-    SET[t]=v; saveSettings(SET); upSetUI(); syncAllToFile();
-    const mm={focus:'FOCUS',short:'SHORT_BREAK',long:'LONG_BREAK'};
-    if(T.mode===mm[t]&&T.state==='idle'){T.timeLeft=dur(T.mode);upT();}
+    setDuration(t,SET[t]+d*SET_META[t].step);
   });
+});
+document.querySelectorAll('.timer-settings .ts-val').forEach(input=>{
+  input.addEventListener('change',()=>setDuration(input.id.replace('sv-',''),input.value));
+  input.addEventListener('keydown',event=>{ if(event.key==='Enter') input.blur(); });
 });
 
 // Init
