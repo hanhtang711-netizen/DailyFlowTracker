@@ -1,0 +1,9 @@
+{
+	"id": "dft-bridge",
+	"name": "DFT Bridge",
+	"version": "1.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "在 Obsidian 中查看 DFT 日程与截止日 — 紧迫度排序、倒计时、一键标记完成",
+	"author": "Alfred",
+	"isDesktopOnly": true
+}
