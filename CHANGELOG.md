@@ -1,3 +1,15 @@
+## DFT Bridge v1.0.1 — 完成任务日期键修复 (261009)
+
+### 修复
+- Obsidian 侧栏点击完成时保留 DFT 返回的原始日期键，避免将 `YYYY-MM-DD` 改写成 `YYYY-M-D` 后 PATCH 到错误日期，导致任务仍显示为未完成。
+
+### 文件
+- `obsidian-plugin/dft-bridge/main.js` — 将原始日期键传入任务完成请求。
+- `obsidian-plugin/dft-bridge/manifest.json` — 插件版本更新至 1.0.1。
+- `obsidian-plugin/dft-bridge/styles.css` — 纳入插件源码。
+
+---
+
 # Daily Flow Tracker — 迭代记录
 
 > 产品版本日志，按版本倒序排列。
